@@ -232,6 +232,8 @@ if [ -d $MODPATH/system/vendor ]; then
   done
 fi
 set_permissions
+set_perm_recursive $MODPATH/system/bin 0 0 0755 0755 u:object_r:system_file:s0
+set_perm_recursive $MODPATH/tools 0 0 0755 0755 u:object_r:system_file:s0
 
 # Complete install
 cleanup

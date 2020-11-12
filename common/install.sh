@@ -11,19 +11,28 @@ test_connection() {
   (ping -4 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
 }
 get_lists () {
-test_connection
-if test $? -ne 0;
-then
-    ui_print "- No internet access!"
-    ui_print "- For now this module requires internet access"
-    ui_print "- Aborting"
-    abort
-else
-    ui_print "- Excellent, you have internet."
-    ui_print "- Downlading extra files..."
-    dl https://downloads.linuxandria.com/downloads/fontrevival/fonts-list.txt
-    dl https://downloads.linuxandria.com/downloads/fontrevival/emojis-list.txt
-fi
+    mkdir -p "$MODPATH"/system/etc/security
+    if [ -f "/system/etc/security/ca-certificates.crt" ]; then
+      cp -f /system/etc/security/ca-certificates.crt "$MODPATH"/system/etc/security/ca-certificates.crt
+    else
+      for i in /system/etc/security/cacerts*/*.0; do
+        echo "$(sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/p" "$i")" >> "$MODPATH"/system/etc/security/ca-certificates.crt
+      done
+    fi
+    mount --bind "$MODPATH"/system/etc/security /system/etc/security/
+    test_connection
+    if test $? -ne 0;
+    then
+        ui_print "- No internet access!"
+        ui_print "- For now this module requires internet access"
+        ui_print "- Aborting"
+        abort
+    else
+        ui_print "- Excellent, you have internet."
+        ui_print "- Downlading extra files..."
+        dl https://downloads.linuxandria.com/downloads/fontrevival/fonts-list.txt
+        dl https://downloads.linuxandria.com/downloads/fontrevival/emojis-list.txt
+    fi
 }
 copy_lists () {
     mkdir -p "$MODPATH"/lists

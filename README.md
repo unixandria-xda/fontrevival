@@ -1,37 +1,24 @@
-<h1 align="center">Magisk Module Template Extended (MMT-Ex)</h1>
+## Welcome to FontRevival
+### The hottest new way to get your fonts and emojis just how you want them!
 
-<div align="center">
-  <!-- Version -->
-    <img src="https://img.shields.io/badge/Version-v1.6-blue.svg?longCache=true&style=popout-square"
-      alt="Version" />
-  <!-- Last Updated -->
-    <img src="https://img.shields.io/badge/Updated-September 12, 2020-green.svg?longCache=true&style=flat-square"
-      alt="_time_stamp_" />
-  <!-- Min Magisk -->
-    <img src="https://img.shields.io/badge/MinMagisk-20.0-red.svg?longCache=true&style=flat-square"
-      alt="_time_stamp_" /></div>
+Inspired by Jowhn Fawkes now defunct Fontchanger module, I now bring you FontRevival
+*NOTE:* THIS IS NOT A PERFECT REPLICA OF FONTCHANGER AND NEVER WILL BE!
 
-<div align="center">
-  <strong>MMT Extended is the spiritual successor of Unity and makes magisk module creation easy. More details in the 
-    <a href="https://github.com/Zackptg5/MMT-Extended/wiki">wiki</a>.
-</div>
+Currently implemented:
+- Fonts provided by me
+- Emojis provided by me
 
-<div align="center">
-  <h3>
-    <a href="https://github.com/Zackptg5/MMT-Extended">
-      Source Code
-    </a>
-    <span> | </span>
-    <a href="https://github.com/Zackptg5/MMT-Extended-Addons">
-      Addons Repository
-    </a>
-    <span> | </span>
-    <a href="https://forum.xda-developers.com/apps/magisk/magisk-module-template-extended-mmt-ex-t4029819">
-      XDA
-    </a>
-  </h3>
-</div>
+NOT implemented:
+- Custom fonts/emojis
 
-### Usage
-- [Follow the directions here (DO NOT FORK)](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template)
-- Then follow instructions in [Wiki](https://github.com/Zackptg5/MMT-Extended/wiki)
+### Credits
+- Fonts are originally edited by John Fawkes, and emojis by John Fawkes and RKDBI
+- Module is by unixandria (Alexandria C)
+- MMT-ex is by @Zackptg5
+- Anny binaries are by their respective authors
+
+### Links:
+- Website: https://linuxandria.com
+- Telegram: https://t.me/unixandria_dev
+- Upstream repo: https://git.linuxandria.com/unixandria-git/fontrevival
+- Magisk repo: coming soon(tm)

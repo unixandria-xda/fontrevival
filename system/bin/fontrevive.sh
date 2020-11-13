@@ -24,7 +24,7 @@ sleep 2
 echo "Please wait, setting up enviroment..."
 alias busybox='$MODDIR/tools/busybox-$ARCH-selinux'
 test_connection() {
-  ui_print "- Testing internet connectivity"
+  printf '\n%s\n' "- Testing internet connectivity"
   (ping -4 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
 }
 dl () {
@@ -58,9 +58,9 @@ font_select () {
     read -r a
     if test $? -ne 0;
     then
-        ui_print "- No internet access!"
-        ui_print "- For now this module requires internet access"
-        ui_print "- Aborting"
+        printf '\n%s\n' "- No internet access!"
+        printf '\n%s\n' "- For now this module requires internet access"
+        printf '\n%s\n' "- Aborting"
         exit 1
     else
         dl https://downloads.linuxandria.com/downloads/fontrevival/font/Font_"$a".zip -d /sdcard/FontRevival/
@@ -113,9 +113,9 @@ emoji_select () {
     read -r a
     if test $? -ne 0;
     then
-        ui_print "- No internet access!"
-        ui_print "- For now this module requires internet access"
-        ui_print "- Aborting"
+        printf '\n%s\n' "- No internet access!"
+        printf '\n%s\n' "- For now this module requires internet access"
+        printf '\n%s\n' "- Aborting"
         exit 1
     else
         dl https://downloads.linuxandria.com/downloads/fontrevival/emoji/Emoji_"$a".zip -d /sdcard/FontRevival/
@@ -141,6 +141,22 @@ emoji_select () {
     fi
     menu_set
 }
+update_lists () {
+    test_connection
+    if test $? -ne 0;
+    then
+        printf '\n%s\n' "- No internet access!"
+        printf '\n%s\n' "- For now this module requires internet access"
+        printf '\n%s\n' "- Aborting"
+        abort
+    else
+        printf '\n%s\n' "- Excellent, you have internet."
+        printf '\n%s\n' "- Downlading extra files..."
+        mkdir -p "$MODPATH"/lists
+        dl https://downloads.linuxandria.com/downloads/fontrevival/fonts-list.txt -d "$MODPATH"/lists/
+        dl https://downloads.linuxandria.com/downloads/fontrevival/emojis-list.txt -d "$MODPATH"/lists/
+    fi
+}
 menu_set () {
 while :
 do
@@ -148,13 +164,15 @@ clear
 echo "-- MAIN MENU --"
 printf '\n%s\n' "1. Fonts"
 printf '\n%s\n' "2. Emojis"
-printf '\n%s\n' "3. Quit"
+printf '\n%s\n' "3. Update lists"
+printf '\n%s\n' "4. Quit"
 printf '\n%s\n' "Please choose an option:"
 read -r a
 case $a in
 1* )     font_select ;;
 2* )     emoji_select ;;
-3* )     exit 0;;
+3*)      update_lists ;;
+4* )     exit 0;;
 * )     echo "Try again." && sleep 2 && menu_set ;;
 esac
 done

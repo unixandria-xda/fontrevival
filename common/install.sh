@@ -18,7 +18,7 @@ get_lists () {
       cp -f /system/etc/security/ca-certificates.crt "$MODPATH"/system/etc/security/ca-certificates.crt
     else
       for i in /system/etc/security/cacerts*/*.0; do
-        echo "$(sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/p" "$i")" >> "$MODPATH"/system/etc/security/ca-certificates.crt
+        sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/p" "$i" >> "$MODPATH"/system/etc/security/ca-certificates.crt
       done
     fi
     test_connection

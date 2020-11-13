@@ -22,7 +22,8 @@ cat << "EOF"
 EOF
 sleep 2
 echo "Please wait, setting up enviroment..."
-alias busybox='$MODDIR/tools/busybox-$ARCH-selinux'
+alias busybox='$MODDIR/tools/busybox'
+alias awk='busybox awk'
 test_connection() {
   printf '\n%s\n' "- Testing internet connectivity"
   (ping -4 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1

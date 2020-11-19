@@ -1,0 +1,3 @@
+# FontRevive wrapper script
+
+ASH_STANDALONE=1 /data/adb/magisk/busybox ash /system/bin/fontrevive.sh

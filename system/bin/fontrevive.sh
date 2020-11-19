@@ -21,15 +21,18 @@ cat << "EOF"
                                                           
 EOF
 sleep 2
+if test ! "$ASH_STANDALONE" -eq "1"
+then
+    printf '\n%s\n' "Do not call this script directly! Instead call just fontrevive"
+    exit 1
+fi
 echo "Please wait, setting up enviroment..."
-alias busybox='$MODDIR/tools/busybox'
-alias awk='busybox awk'
 test_connection() {
   printf '\n%s\n' "- Testing internet connectivity"
   (ping -4 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
 }
 dl () {
-    "$MODDIR"/tools/aria2c -x 16 --async-dns  --check-certificate=false --ca-certificate=/system/etc/security/ca-certificates.crt --quiet "$@"
+    "$MODDIR"/tools/aria2c -x 16 --async-dns  --check-certificate=false --ca-certificate="$MODDIR"/ca-certificates.crt --quiet "$@"
 }
 font_select () {
     clear
@@ -152,7 +155,7 @@ update_lists () {
         abort
     else
         printf '\n%s\n' "- Excellent, you have internet."
-        printf '\n%s\n' "- Downlading extra files..."
+        printf '\n%s\n' "- Downlading extra lists..."
         mkdir -p "$MODPATH"/lists
         dl https://downloads.linuxandria.com/downloads/fontrevival/fonts-list.txt -d "$MODPATH"/lists/
         dl https://downloads.linuxandria.com/downloads/fontrevival/emojis-list.txt -d "$MODPATH"/lists/

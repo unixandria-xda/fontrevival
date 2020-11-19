@@ -3,7 +3,7 @@ ui_print "- Welcome to fontrevival!"
 ui_print "- Setting up enviroment..."
 alias busybox='$MODPATH/common/tools/busybox-$ARCH-selinux'
 dl () {
-    "$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 --async-dns  --check-certificate=false --ca-certificate="$MODPATH"/system/etc/security/ca-certificates.crt --quiet "$@"
+    "$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 --async-dns  --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
 }
 mkdir "$MODPATH"/tools
 cp_ch "$MODPATH"/common/tools/busybox-"$ARCH"-selinux "$MODPATH"/tools/busybox
@@ -15,10 +15,10 @@ test_connection() {
 get_lists () {
     mkdir -p "$MODPATH"/system/etc/security
     if [ -f "/system/etc/security/ca-certificates.crt" ]; then
-      cp -f /system/etc/security/ca-certificates.crt "$MODPATH"/system/etc/security/ca-certificates.crt
+      cp -f /system/etc/security/ca-certificates.crt "$MODPATH"/ca-certificates.crt
     else
       for i in /system/etc/security/cacerts*/*.0; do
-        sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/p" "$i" >> "$MODPATH"/system/etc/security/ca-certificates.crt
+        sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/p" "$i" >> "$MODPATH"/ca-certificates.crt
       done
     fi
     test_connection
@@ -43,8 +43,8 @@ copy_lists () {
     sed -i s/\.zip//g "$MODPATH"/lists/emojis-list.txt
 }
 setup_script () {
-    mv "$MODPATH"/system/bin/fontrevive.sh "$MODPATH"/system/bin/fontrevive
     chmod 755 "$MODPATH"/system/bin/fontrevive
+    chmod 755 "$MODPATH"/system/bin/fontrevive.sh
     mkdir "$MODPATH"/system/fonts
 }
 get_lists

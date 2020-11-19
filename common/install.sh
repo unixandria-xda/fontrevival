@@ -1,12 +1,10 @@
 # shellcheck shell=dash
 ui_print "- Welcome to fontrevival!"
 ui_print "- Setting up enviroment..."
-alias busybox='$MODPATH/common/tools/busybox-$ARCH-selinux'
 dl () {
     "$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 --async-dns  --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
 }
 mkdir "$MODPATH"/tools
-cp_ch "$MODPATH"/common/tools/busybox-"$ARCH"-selinux "$MODPATH"/tools/busybox
 cp_ch "$MODPATH"/common/tools/aria2c-"$ARCH" "$MODPATH"/tools/aria2c
 test_connection() {
   ui_print "- Testing internet connectivity"
@@ -32,8 +30,8 @@ get_lists () {
         ui_print "- Excellent, you have internet."
         ui_print "- Downlading extra files..."
         mkdir -p "$MODPATH"/lists
-        dl https://downloads.linuxandria.com/downloads/fontrevival/fonts-list.txt -d "$MODPATH"/lists/
-        dl https://downloads.linuxandria.com/downloads/fontrevival/emojis-list.txt -d "$MODPATH"/lists/
+        dl https://downloads.linuxandria.com/downloads/fontrevival-files/fonts-list.txt -d "$MODPATH"/lists/
+        dl https://downloads.linuxandria.com/downloads/fontrevival-files/emojis-list.txt -d "$MODPATH"/lists/
     fi
 }
 copy_lists () {

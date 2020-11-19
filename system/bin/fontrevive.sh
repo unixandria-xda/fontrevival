@@ -67,7 +67,7 @@ font_select () {
         printf '\n%s\n' "- Aborting"
         exit 1
     else
-        dl https://downloads.linuxandria.com/downloads/fontrevival/font/Font_"$a".zip -d /sdcard/FontRevival/
+        dl https://downloads.linuxandria.com/downloads/fontrevival-files/font/Font_"$a".zip -d /sdcard/FontRevival/
         if test $? -ne 0
         then
             # They probably mistyped something and we're getting a 404
@@ -122,7 +122,7 @@ emoji_select () {
         printf '\n%s\n' "- Aborting"
         exit 1
     else
-        dl https://downloads.linuxandria.com/downloads/fontrevival/emoji/Emoji_"$a".zip -d /sdcard/FontRevival/
+        dl https://downloads.linuxandria.com/downloads/fontrevival-files/emoji/Emoji_"$a".zip -d /sdcard/FontRevival/
         if test $? -ne 0
         then
             # They probably mistyped something and we're getting a 404
@@ -157,8 +157,8 @@ update_lists () {
         printf '\n%s\n' "- Excellent, you have internet."
         printf '\n%s\n' "- Downlading extra lists..."
         mkdir -p "$MODPATH"/lists
-        dl https://downloads.linuxandria.com/downloads/fontrevival/fonts-list.txt -d "$MODPATH"/lists/
-        dl https://downloads.linuxandria.com/downloads/fontrevival/emojis-list.txt -d "$MODPATH"/lists/
+        dl https://downloads.linuxandria.com/downloads/fontrevival-files/fonts-list.txt -d "$MODPATH"/lists/
+        dl https://downloads.linuxandria.com/downloads/fontrevival-files/emojis-list.txt -d "$MODPATH"/lists/
     fi
 }
 menu_set () {

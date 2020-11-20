@@ -1,4 +1,15 @@
 # shellcheck shell=dash
+do_banner () {
+cat << "EOF" 
+  ____            __   ___              _              __
+  / __/___   ___  / /_ / _ \ ___  _  __ (_)_  __ ___ _ / /
+ / _/ / _ \ / _ \/ __// , _// -_)| |/ // /| |/ // _ `// / 
+/_/   \___//_//_/\__//_/|_| \__/ |___//_/ |___/ \_,_//_/  
+                                                          
+EOF
+sleep 2
+}
+do_banner
 ui_print "- Welcome to fontrevival!"
 ui_print "- Setting up enviroment..."
 dl () {

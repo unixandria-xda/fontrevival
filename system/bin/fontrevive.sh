@@ -13,6 +13,7 @@ set -x 2
 set -euo pipefail
 trap 'exxit $?' EXIT
 clear
+do_banner () {
 cat << "EOF" 
   ____            __   ___              _              __
   / __/___   ___  / /_ / _ \ ___  _  __ (_)_  __ ___ _ / /
@@ -21,6 +22,7 @@ cat << "EOF"
                                                           
 EOF
 sleep 2
+}
 if test ! "$ASH_STANDALONE" -eq "1"
 then
     printf '\n%s\n' "Do not call this script directly! Instead call just fontrevive"
@@ -36,6 +38,7 @@ dl () {
 }
 font_select () {
     clear
+    do_banner
     sleep 0.5
    printf '\n%s\n' "Fonts selected."
     sleep 0.5
@@ -91,6 +94,7 @@ font_select () {
 }
 emoji_select () {
     clear
+    do_banner
     sleep 0.5
     printf '\n%s\n' "Emojis selected."
     sleep 0.5
@@ -134,6 +138,7 @@ emoji_select () {
             emoji_select
         else
             clear
+            do_banner
             sleep 0.2
             printf '\n%s\n' "Now installing the emoji..."
             sleep 2
@@ -146,6 +151,7 @@ emoji_select () {
     menu_set
 }
 update_lists () {
+    do_banner
     test_connection
     if test $? -ne 0;
     then
@@ -165,7 +171,8 @@ menu_set () {
 while :
 do
 clear
-echo "-- MAIN MENU --"
+printf '\n%s\n'     ``"-- MAIN MENU --"
+do_banner
 printf '\n%s\n' "1. Fonts"
 printf '\n%s\n' "2. Emojis"
 printf '\n%s\n' "3. Update lists"
@@ -187,11 +194,9 @@ then
     printf '\n%s\n' '!!! WARNING !!!'
     printf '\n%s\n' 'Potentially conflciting module detected'
     printf '\n%s\n' 'Before reporting bugs please remove any other module that effects fonts'
-    sleep 10
+    sleep 7
     clear
-    menu_set
-else
-    menu_set
 fi
+menu_set
 
 

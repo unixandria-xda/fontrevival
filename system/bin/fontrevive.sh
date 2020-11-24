@@ -31,7 +31,7 @@ fi
 echo "Please wait, setting up enviroment..."
 test_connection() {
   printf '\n%s\n' "- Testing internet connectivity"
-  (ping -4 -q -c 1 -W 1 bing.com >/dev/null 2>&1) && return 0 || return 1
+  (ping -q -c 2 -W 2 bing.com >/dev/null 2>&1) && return 0 || return 1
 }
 dl () {
     "$MODDIR"/tools/aria2c -x 16 --async-dns  --check-certificate=false --ca-certificate="$MODDIR"/ca-certificates.crt --quiet "$@"
@@ -85,7 +85,7 @@ font_select () {
             sleep 0.2
             printf '\n%s\n' "Now installing the font..."
             sleep 2
-            unzip /sdcard/FontRevival/Font_"$a".zip -d "$MODDIR/system/fonts"
+            unzip /sdcard/FontRevival/Font_"$a".zip -d "$MODDIR/system/fonts" 
             printf '\n%s\n' "Install success!"
             sleep 2
         fi
@@ -165,6 +165,11 @@ update_lists () {
         mkdir -p "$MODPATH"/lists
         dl https://downloads.linuxandria.com/downloads/fontrevival-files/fonts-list.txt -d "$MODPATH"/lists/
         dl https://downloads.linuxandria.com/downloads/fontrevival-files/emojis-list.txt -d "$MODPATH"/lists/
+        sleep 1
+        printf '\n%s\n' "Lists updated! Returning to menu"
+        sleep 2
+        clear
+        menu_set
     fi
 }
 menu_set () {
@@ -173,6 +178,7 @@ do
 clear
 printf '\n%s\n'     ``"-- MAIN MENU --"
 do_banner
+printf '\n%s\n' "WARNING: PLEASE MAKE SURE NO OTHER FONT MODULES ARE INSTALLED"
 printf '\n%s\n' "1. Fonts"
 printf '\n%s\n' "2. Emojis"
 printf '\n%s\n' "3. Update lists"
@@ -183,20 +189,11 @@ case $a in
 1* )     font_select ;;
 2* )     emoji_select ;;
 3*)      update_lists ;;
-4* )     exit 0;;
+4* )     exit 0 ;;
 * )     echo "Try again." && sleep 2 && menu_set ;;
 esac
 done
 }
-ls /data/adb/modules/*/system/fonts/ | grep -v fontrevival >/dev/null
-if test $? -eq 0
-then
-    printf '\n%s\n' '!!! WARNING !!!'
-    printf '\n%s\n' 'Potentially conflciting module detected'
-    printf '\n%s\n' 'Before reporting bugs please remove any other module that effects fonts'
-    sleep 7
-    clear
-fi
 menu_set
 
 

@@ -1,7 +1,7 @@
 #!/data/adb/modules/fontrevival/tools/busybox ash
 # shellcheck shell=dash
 mkdir -p /sdcard/FontRevival/logs
-# Ugly, I hate hardcoding but what else can I do here?
+# HARDCODE GO BRRRR
 MODDIR="/data/adb/modules/fontrevival"
 exxit() {
 	  set +euxo pipefail
@@ -14,6 +14,7 @@ set -euo pipefail
 trap 'exxit $?' EXIT
 clear
 do_banner () {
+# Kewl ascii art
 cat << "EOF" 
   ____            __   ___              _              __
   / __/___   ___  / /_ / _ \ ___  _  __ (_)_  __ ___ _ / /
@@ -61,8 +62,25 @@ font_select () {
         }
      }' "$MODDIR"/lists/fonts-list.txt
     sleep 1
-   printf '\n%s\n' "Your choice:"
+    printf '\n%s\n' "Your choice"
+    printf '\n%s\n' "x or go to main menu or q to quit:"
     read -r a
+    if "$a" == "q"
+    then
+        clear
+        do_banner
+        printf '\n%s\n' "Thanks for using FontRevival"
+        printf '\n%s\n' "Goodbye"
+        sleep 2
+        exit 0
+    elif "$a" == "x"
+    then
+        do_banner
+        printf '\n%s\n' "Going to main menu..."
+        sleep 1
+        menu_set
+    fi    
+    test_connection
     if test $? -ne 0;
     then
         printf '\n%s\n' "- No internet access!"
@@ -87,7 +105,7 @@ font_select () {
             sleep 2
             unzip /sdcard/FontRevival/Font_"$a".zip -d "$MODDIR/system/fonts" 
             printf '\n%s\n' "Install success!"
-            sleep 2
+            sleep 1.5
         fi
     fi
     menu_set
@@ -117,8 +135,16 @@ emoji_select () {
         }
      }' "$MODDIR"/lists/emojis-list.txt
     sleep 1
-    printf '\n%s\n' "Your choice:"
+    printf '\n%s\n' "Your choice"
+    printf '\n%s\n' "x or go to main menu or q to quit:"
     read -r a
+    if "$a" == "q"
+        then exit 0
+    elif "$a" == "x"
+    then
+        menu_set
+    fi    
+    test_connection
     if test $? -ne 0;
     then
         printf '\n%s\n' "- No internet access!"
@@ -144,7 +170,7 @@ emoji_select () {
             sleep 2
             unzip /sdcard/FontRevival/Emoji_"$a".zip -d "$MODDIR/system/fonts"
             printf '\n%s\n' "Install success!"
-            sleep 2
+            sleep 1.5
 
         fi
     fi
@@ -165,9 +191,9 @@ update_lists () {
         mkdir -p "$MODPATH"/lists
         dl https://downloads.linuxandria.com/downloads/fontrevival-files/fonts-list.txt -d "$MODPATH"/lists/
         dl https://downloads.linuxandria.com/downloads/fontrevival-files/emojis-list.txt -d "$MODPATH"/lists/
-        sleep 1
+        sleep 0.5
         printf '\n%s\n' "Lists updated! Returning to menu"
-        sleep 2
+        sleep 1
         clear
         menu_set
     fi

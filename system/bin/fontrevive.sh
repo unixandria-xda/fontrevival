@@ -24,10 +24,18 @@ cat << "EOF"
 EOF
 sleep 2
 }
+do_quit () {
+    clear
+    do_banner
+    printf '\n%s\n' "Thanks for using FontRevival"
+    printf '\n%s\n' "Goodbye"
+    sleep 2
+    exit 0
+}
 if test ! "$ASH_STANDALONE" -eq "1"
 then
     printf '\n%s\n' "Do not call this script directly! Instead call just fontrevive"
-    exit 1
+    abort
 fi
 echo "Please wait, setting up enviroment..."
 test_connection() {
@@ -41,9 +49,10 @@ font_select () {
     clear
     do_banner
     sleep 0.5
-   printf '\n%s\n' "Fonts selected."
+    printf '\n%s\n' "Fonts selected."
     sleep 0.5
     printf '\n%s\n' "Please type the name of the font you would like to apply from this list:"
+    printf '\n%s\n' "========================================================================"
     sleep 3
     awk '{  a[i++] = $0
         if (i == 3)
@@ -62,17 +71,13 @@ font_select () {
         }
      }' "$MODDIR"/lists/fonts-list.txt
     sleep 1
+    printf '\n%s\n' "========================================================================"
     printf '\n%s\n' "Your choice"
     printf '\n%s\n' "x or go to main menu or q to quit:"
     read -r a
     if "$a" == "q"
     then
-        clear
-        do_banner
-        printf '\n%s\n' "Thanks for using FontRevival"
-        printf '\n%s\n' "Goodbye"
-        sleep 2
-        exit 0
+        do_quit
     elif "$a" == "x"
     then
         do_banner
@@ -116,7 +121,8 @@ emoji_select () {
     sleep 0.5
     printf '\n%s\n' "Emojis selected."
     sleep 0.5
-   printf '\n%s\n' "Please type the name of the emoji you would like to apply from this list:"
+    printf '\n%s\n' "========================================================================"
+    printf '\n%s\n' "Please type the name of the emoji you would like to apply from this list:"
     sleep 3
     awk '{  a[i++] = $0
         if (i == 5)
@@ -135,15 +141,20 @@ emoji_select () {
         }
      }' "$MODDIR"/lists/emojis-list.txt
     sleep 1
+    printf '\n%s\n' "========================================================================"
     printf '\n%s\n' "Your choice"
-    printf '\n%s\n' "x or go to main menu or q to quit:"
+    printf '\n%s\n' "x to go to main menu or q to quit:"
     read -r a
     if "$a" == "q"
-        then exit 0
+    then
+        do_quit
     elif "$a" == "x"
     then
+        do_banner
+        printf '\n%s\n' "Going to main menu..."
+        sleep 1
         menu_set
-    fi    
+    fi       
     test_connection
     if test $? -ne 0;
     then
@@ -202,12 +213,12 @@ menu_set () {
 while :
 do
 clear
-printf '\n%s\n'     ``"-- MAIN MENU --"
 do_banner
+printf '\n%s\n'     ``"--- MAIN MENU ---"
 printf '\n%s\n' "WARNING: PLEASE MAKE SURE NO OTHER FONT MODULES ARE INSTALLED"
-printf '\n%s\n' "1. Fonts"
-printf '\n%s\n' "2. Emojis"
-printf '\n%s\n' "3. Update lists"
+printf '\n%s\n' "1. Select font"
+printf '\n%s\n' "2. Select emoji"
+printf '\n%s\n' "3. Update emoji and font lists"
 printf '\n%s\n' "4. Quit"
 printf '\n%s\n' "Please choose an option:"
 read -r a
@@ -215,8 +226,8 @@ case $a in
 1* )     font_select ;;
 2* )     emoji_select ;;
 3*)      update_lists ;;
-4* )     exit 0 ;;
-* )     echo "Try again." && sleep 2 && menu_set ;;
+4* )     do_quit ;;
+* )     printf '\n%s\n' "Invalid option, please try again." && sleep 2 && menu_set ;;
 esac
 done
 }

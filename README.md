@@ -2,7 +2,6 @@
 ### The hottest new way to get your fonts and emojis just how you want them!
 
 Inspired by Jowhn Fawkes' now defunct Fontchanger module, I now bring you FontRevival: a cool new way to get the emojis and fonts of your dreams!
-**NOTE:** This module is neither developed by nor endorsed in any way by John Fawkes, the creator of Fontchanger!
 
 Currently implemented:
 - Fonts provided by me
@@ -23,3 +22,5 @@ NOT implemented:
 - Telegram: [@uinxandria_dev](https://t.me/unixandria_dev)
 - Upstream repo: [https://git.linuxandria.com/unixandria-git/fontrevival](https://git.linuxandria.com/unixandria-git/fontrevival)
 - Magisk repo: coming soon(tm)
+
+<sub><sub>**NOTE:** This module is neither developed by nor endorsed in any way by John Fawkes, the creator of Fontchanger!</sub></sup>

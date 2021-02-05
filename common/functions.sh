@@ -3,7 +3,7 @@
 # MMT Extended Utility Functions
 #
 ##########################################################################################
-
+# shellcheck shell=ash 
 abort() {
   ui_print "$1"
   rm -rf $MODPATH 2>/dev/null
@@ -141,9 +141,10 @@ fi
 
 # Debug
 if $DEBUG; then
-  ui_print "- Debug mode"
-  ui_print "  Module install log will include debug info"
-  ui_print "  Be sure to save it after module install"
+  ui_print "- Setting up debug logs."
+  ui_print "- Logging to /sdcard/Fontifier/logs/install.log "
+  mkdir -p /sdcard/Fontifier/logs/
+  exec 2>/sdcard/Fontifier/logs/install.log 
   set -x
 fi
 

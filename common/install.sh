@@ -48,9 +48,9 @@ get_lists () {
         ui_print "- Excellent, you have internet."
         ui_print "- Downlading extra files..."
         mkdir -p "$MODPATH"/lists
-        dl https://downloads.linuxandria.com/downloads/fontifier-files/lists/fonts-list.txt -d "$TMPDIR"
-        dl https://downloads.linuxandria.com/downloads/fontifier-files/lists/emojis-list.txt -d "$TMPDIR"
-        dl https://downloads.linuxandria.com/downloads/fontifier-files/xml/fonts.xml -d "$TMPDIR"
+        dl https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt -d "$TMPDIR"
+        dl https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt -d "$TMPDIR"
+        dl https://dl.androidacy.com/downloads/fontifier-files/xml/fonts.xml -d "$TMPDIR"
     fi
 }
 copy_lists () {

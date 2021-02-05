@@ -1,6 +1,5 @@
 #!/data/adb/modules/fontrevival/tools/busybox ash
 # shellcheck shell=ash
-echo "Please wait, setting up enviroment..."
 if test "$(getenforce)" == "Enforcing" || test "$(getenforce)" == "enforcing"
 then
     setenforce 0
@@ -30,6 +29,8 @@ cat << "EOF"
  |_| \___/|_|\_| |_| |___|_| |___|___|_|_\
 
 EOF
+printf '\n%s\n'  "An Androidacy Project"
+printf '\n%s' "For more, visit androidacy.com"
 sleep 2
 }
 do_quit () {
@@ -50,11 +51,11 @@ then
     exxit $?
 fi
 test_connection() {
-  printf '\n%s\n' "CHecking for internet access..."
-  (ping -q -c 2 -W 2 linuxandria.com >/dev/null 2>&1) && return 0 || return 1
+  printf '\n%s\n' "Checking for internet access..."
+  (ping -q -c 2 -W 2 androidacy.com >/dev/null 2>&1) && return 0 || return 1
 }
 dl () {
-    "$MODDIR"/tools/aria2c -x 16 --async-dns  --check-certificate=false --ca-certificate="$MODDIR"/ca-certificates.crt --quiet "$@"
+    "$MODDIR"/tools/aria2c -s 16 -x 16 --async-dns  --check-certificate=false --ca-certificate="$MODDIR"/ca-certificates.crt --quiet "$@"
 }
 font_select () {
     clear
@@ -105,7 +106,7 @@ font_select () {
         printf '\n%s\n' "- Exiting"
         exxit $?
     else
-        dl https://downloads.linuxandria.com/downloads/fontifier-files/fonts/"$a".zip -d /sdcard/Fontifier/
+        dl https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip -d /sdcard/Fontifier/
         if test $? -ne 0
         then
             clear
@@ -177,7 +178,7 @@ emoji_select () {
         printf '\n%s\n' "- Exiting"
         exxit $?
     else
-        dl https://downloads.linuxandria.com/downloads/fontifier-files/emojis/"$a".zip -d /sdcard/Fontifier/
+        dl https://dl.androidacy.com/downloads/fontifier-files/emojis/"$a".zip -d /sdcard/Fontifier/
         if test $? -ne 0
         then
             # They probably mistyped something and we're getting a 404
@@ -214,8 +215,8 @@ update_lists () {
         printf '\n%s\n' "- Excellent, you have internet."
         printf '\n%s\n' "- Downlading extra lists..."
         mkdir -p "$MODDIR"/lists
-        dl https://downloads.linuxandria.com/downloads/fontifier-files/lists/fonts-list.txt -d "$MODDIR"/lists/
-        dl https://downloads.linuxandria.com/downloads/fontifier-files/lists/emojis-list.txt -d "$MODDIR"/lists/
+        dl https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt -d "$MODDIR"/lists/
+        dl https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt -d "$MODDIR"/lists/
         cp "$MODDIR"/lists/* /sdcard/Fontifier/lists
         sleep 0.5
         printf '\n%s\n' "Lists updated! Returning to menu"

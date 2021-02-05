@@ -1,1 +1,2 @@
+echo "Please wait, setting up enviroment..."
 ASH_STANDALONE=1 NATIVE_RUN=true /data/adb/magisk/busybox ash /system/bin/fontifier.sh

@@ -14,9 +14,9 @@ if [ -f "$INFO" ]; then
         [ "$(ls -A "$LINE" 2>/dev/null)" ] && break 1 || rm -rf "$LINE"
       done
     fi
-  done < "$INFO"
+  done <"$INFO"
   rm -f "$INFO"
 fi
-setenforce 0 
+setenforce 0
 rm -rf /sdcard/Fontifier
 setenforce 1

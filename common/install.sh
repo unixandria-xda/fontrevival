@@ -1,9 +1,4 @@
 # shellcheck shell=ash
-if test "$(getenforce)" == "Enforcing" || test "$(getenforce)" == "enforcing"; then
-	setenforce 0
-	IS_ENFORCE=true
-fi
-
 do_banner() {
 	cat <<"EOF"
 ███████  ██████  ███    ██ ████████                           
@@ -23,22 +18,9 @@ EOF
 do_banner
 ui_print "ⓘ Welcome to Fontifier!"
 ui_print "ⓘ Setting up enviroment..."
-dl() {
-	mkdir -p "$MODPATH"/system/etc/security
-	if [ -f "/system/etc/security/ca-certificates.crt" ]; then
-		cp -f /system/etc/security/ca-certificates.crt "$MODPATH"/ca-certificates.crt
-	else
-		for i in /system/etc/security/cacerts*/*.0; do
-			sed -n "/BEGIN CERTIFICATE/,/END CERTIFICATE/p" "$i" >>"$MODPATH"/ca-certificates.crt
-		done
-	fi
-	"$MODPATH"/common/tools/aria2c-"$ARCH" -x 16 -s 16 --async-dns --file-allocation=none --check-certificate=false --ca-certificate="$MODPATH"/ca-certificates.crt --quiet "$@"
-}
-mkdir "$MODPATH"/tools
-cp_ch "$MODPATH"/common/tools/aria2c-"$ARCH" "$MODPATH"/tools/aria2c
 test_connection() {
 	ui_print "ⓘ Testing internet connectivity"
-	(ping -4 -q -c 1 -W 2 linuxandria.com >/dev/null 2>&1) && return 0 || return 1
+	(ping -4 -q -c 1 -W 2 www.androidacy.com >/dev/null 2>&1) && return 0 || return 1
 }
 get_lists() {
 	test_connection
@@ -52,22 +34,21 @@ get_lists() {
 		ui_print "ⓘ Excellent, you have internet."
 		ui_print "ⓘ Downlading extra files..."
 		mkdir -p "$MODPATH"/lists
-		dl https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt -d "$TMPDIR"
-		dl https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt -d "$TMPDIR"
-		dl https://dl.androidacy.com/downloads/fontifier-files/xml/fonts.xml -d "$TMPDIR"
+		mkdir -p "$EXT_DATA"/lists
+		mkdir -p "$EXT_DATA"/font
+		mkdir -p "$EXT_DATA"/emoji
+		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt >"$MODPATH"/lists/fonts-list.txt
+		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODPATH"/lists/emojis-list.txt
+		mkdir -p "$MODPATH"/"$(find /*/etc | grep fonts.xml | sed 's/fonts[.]xml//')"
+		curl -kL https://dl.androidacy.com/downloads/fontifier-files/xml/fonts.xml >"$MODPATH"/"$(find /*/etc | grep fonts.xml)"
 	fi
 }
 copy_lists() {
-	mkdir -p "$EXT_DATA"/lists
-	mkdir -p "$EXT_DATA"/font
-	mkdir -p "$EXT_DATA"/emoji
-	cp "$TMPDIR"/*-list.txt "$EXT_DATA"/lists
-	cp "$TMPDIR"/*-list.txt "$MODPATH"/lists
-	cp "$TMPDIR"/fonts.xml "$MODPATH"/"$(find /*/etc/ | grep fonts.xml)"
+	cp -rf "$MODPATH"/lists/fonts-list.txt "$EXT_DATA"/lists/fonts-list.txt
+	cp -rf "$MODPATH"/lists/emojis-list.txt "$EXT_DATA"/lists/emojis-list.txt
 }
 setup_script() {
-	chmod 755 "$MODPATH"/system/bin/fontifier
-	chmod 755 "$MODPATH"/system/bin/fontifier.sh
+	chmod 755 -R "$MODPATH"/system/bin/
 	mkdir "$MODPATH"/system/fonts
 }
 extra_cleanup() {
@@ -78,9 +59,6 @@ get_lists
 copy_lists
 setup_script
 extra_cleanup
-if $IS_ENFORCE; then
-	setenforce 1
-fi
 {
 	echo "Here's some useful links:"
 	echo " "

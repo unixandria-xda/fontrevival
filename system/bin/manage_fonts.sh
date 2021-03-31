@@ -19,10 +19,6 @@ EOF
     sleep 2
 }
 do_banner
-if test "$(getenforce)" == "Enforcing" || test "$(getenforce)" == "enforcing"; then
-    setenforce 0
-    IS_ENFORCE=true
-fi
 detect_ext_data() {
     if touch /sdcard/.rw && rm /sdcard/.rw; then
         export EXT_DATA="/sdcard/FontManager"
@@ -69,9 +65,6 @@ do_quit() {
     printf '\n%s\n' "Thanks for using Font Manager"
     printf '\n%s\n' "Goodbye"
     sleep 2
-    if $IS_ENFORCE; then
-        setenforce 1
-    fi
     exit 0
 }
 if ! $NATIVE_RUN; then
@@ -81,9 +74,6 @@ fi
 test_connection() {
     printf '\n%s\n' "Checking for internet access..."
     (ping -q -c 2 -W 2 androidacy.com >/dev/null 2>&1) && return 0 || return 1
-}
-dl() {
-    "$MODDIR"/tools/aria2c -s 16 -x 16 --async-dns --check-certificate=false --ca-certificate="$MODDIR"/ca-certificates.crt --quiet "$@"
 }
 font_select() {
     clear
@@ -131,7 +121,7 @@ font_select() {
         printf '\n%s\n' "- Exiting"
         exxit $?
     else
-        dl https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip -d "$EXT_DATA"/
+        curl -kL https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip >"$EXT_DATA"/"$a".zip
         if test $? -ne 0; then
             clear
             printf '\n%s\n' "ERROR: INVALID SELECTION"
@@ -199,7 +189,7 @@ emoji_select() {
         printf '\n%s\n' "- Exiting"
         exxit $?
     else
-        dl https://dl.androidacy.com/downloads/fontifier-files/emojis/"$a".zip -d "$EXT_DATA"/
+        curl -kL https://dl.androidacy.com/downloads/fontifier-files/emojis/"$a".zip >"$EXT_DATA"/"$a".zip
         if test $? -ne 0; then
             clear
             printf '\n%s\n' "ERROR: INVALID SELECTION"
@@ -233,8 +223,8 @@ update_lists() {
         printf '\n%s\n' "- Excellent, you have internet."
         printf '\n%s\n' "- Downlading extra lists..."
         mkdir -p "$MODDIR"/lists
-        dl https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt -d "$MODDIR"/lists/
-        dl https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt -d "$MODDIR"/lists/
+        curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt >"$MODDIR"/lists/fonts-list.txt
+        curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODDIR"/lists/emojis-list.txt
         cp "$MODDIR"/lists/* "$EXT_DATA"/lists
         sleep 0.5
         printf '\n%s\n' "Lists updated! Returning to menu"

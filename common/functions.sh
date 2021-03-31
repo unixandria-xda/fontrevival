@@ -60,7 +60,6 @@ if ! mktouch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
   fi
 fi
 mkdir "$MODPATH"/logs/
-mkdir "$EXT_DATA"/apks/
 mkdir "$EXT_DATA"/logs/
 chmod 750 -R "$EXT_DATA"
 
@@ -350,6 +349,7 @@ fi
 ui_print " "
 ui_print "- Setting Permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
+chmod -R 755 $MODPATH/system/bin/*
 if [ -d $MODPATH/system/vendor ]; then
   set_perm_recursive $MODPATH/system/vendor 0 0 0755 0644 u:object_r:vendor_file:s0
   [ -d $MODPATH/system/vendor/app ] && set_perm_recursive $MODPATH/system/vendor/app 0 0 0755 0644 u:object_r:vendor_app_file:s0

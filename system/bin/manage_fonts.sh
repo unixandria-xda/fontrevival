@@ -71,12 +71,13 @@ mkdir -p "$EXT_DATA"/lists
 MODDIR="/data/adb/modules/fontrevival"
 it_failed() {
     set +euxo pipefail
-    [ "$1" -ne 0 ] && it_failed $? "$2"
-    echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
-    echo -e "${R}Something bad happened and the script has encountered an issue${N}"
-    echo -e "${R}Make sure you're following instructions and try again!${N}"
-    echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
-    echo -e "Exiting the script now!"
+    if "$1" -ne "0"; then
+        echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
+        echo -e "${R}Something bad happened and the script has encountered an issue${N}"
+        echo -e "${R}Make sure you're following instructions and try again!${N}"
+        echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
+        echo -e "Exiting the script now!"
+    fi
     exit "$1"
 }
 exec 3>&2 2>"$EXT_DATA"/logs/script.log
@@ -149,6 +150,16 @@ font_select() {
         sleep 1
         menu_set
     fi
+    if ! grep -i "$a" "$MODDIR"/lists/fonts-list.txt >/dev/null; then
+        clear
+        do_banner
+        echo -e "$div"
+        echo -e "${R}ERROR: INVALID SELECTION${N}"
+        sleep 0.5
+        echo -e "${Y}Please try again${N}"
+        sleep 3
+        font_select
+    fi
     test_connection &
     e_spinner "${Y}Checking for internet access...${N}"
     if test $? -ne 0; then
@@ -158,23 +169,14 @@ font_select() {
         it_failed $?
     else
         do_banner
-        curl -kL https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip >"$EXT_DATA"/"$a".zip &
+        curl -kL https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip >"$EXT_DATA"/"$a".zip && sleep 2 &
         e_spinner "${G} Downloading $a font...${N}"
-        if test $? -ne 0; then
-            clear
-            echo -e "${R}ERROR: INVALID SELECTION${N}"
-            sleep 0.5
-            printf '\n%s\n' "${Y}Please try again${N}"
-            sleep 5
-            font_select
-        else
-            sleep 2
-            unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null &
-            e_spinner "${G} Installing $a font...${N}"
-            echo -e " "
-            echo -e "${G}Install success!${N}"
-            sleep 1.5
-        fi
+        sleep 2
+        unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null && sleep 2 &
+        e_spinner "${G} Installing $a font...${N}"
+        echo -e " "
+        echo -e "${G}Install success!${N}"
+        sleep 1.5
     fi
     menu_set
 }
@@ -217,6 +219,16 @@ emoji_select() {
         sleep 1
         menu_set
     fi
+    if ! grep -i "$a" "$MODDIR"/lists/emojis-list.txt >/dev/null; then
+        clear
+        do_banner
+        echo -e "$div"
+        echo -e "${R}ERROR: INVALID SELECTION${N}"
+        sleep 0.5
+        echo -e "${Y}Please try again${N}"
+        sleep 3
+        emoji_select
+    fi
     test_connection &
     e_spinner "${Y}Checking for internet access...${N}"
     if test $? -ne 0; then
@@ -227,24 +239,13 @@ emoji_select() {
     else
         do_banner
         sleep 0.2
-        curl -kL https://dl.androidacy.com/downloads/fontifier-files/emojis/"$a".zip >"$EXT_DATA"/"$a".zip &
+        curl -kL https://dl.androidacy.com/downloads/fontifier-files/emojis/"$a".zip >"$EXT_DATA"/"$a".zip && sleep 2 &
         e_spinner "${G} Downloading $a emoji...${N}"
-        if test $? -ne 0; then
-            clear
-            echo -e "${R}ERROR: INVALID SELECTION${N}"
-            sleep 0.5
-            echo -e "${Y}Please try again${N}"
-            sleep 3
-            emoji_select
-        else
-            sleep 2
-            unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null &
-            e_spinner "${G} Installing $a emoji...${N}"
-            echo -e " "
-            echo -e "${G}Install success!${N}"
-            sleep 1.5
-
-        fi
+        unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null && sleep 2 &
+        e_spinner "${G} Installing $a emoji...${N}"
+        echo -e " "
+        echo -e "${G}Install success!${N}"
+        sleep 1.5
     fi
     menu_set
 }
@@ -265,6 +266,7 @@ update_lists() {
             curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODDIR"/lists/emojis-list.txt
             sed -i s/[.]zip//gi "$MODDIR"/lists/*
             cp "$MODDIR"/lists/* "$EXT_DATA"/lists
+            sleep 2
         }
         dl_l &
         e_spinner "${G} Downloading fresh lists...${N}"

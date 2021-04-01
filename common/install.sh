@@ -1,4 +1,5 @@
 # shellcheck shell=ash
+# shellcheck disable=SC2169
 do_banner() {
 	echo -e " "
 	echo -e "${B}▒█▀▀▀ █▀▀█ █▀▀▄ ▀▀█▀▀ ${N}"
@@ -8,8 +9,8 @@ do_banner() {
 	echo -e "${B}▒█▀▄▀█ █▀▀█ █▀▀▄ █▀▀█ █▀▀▀ █▀▀ █▀▀█ ${N}"
 	echo -e "${B}▒█▒█▒█ █▄▄█ █░░█ █▄▄█ █░▀█ █▀▀ █▄▄▀ ${N}"
 	echo -e "${B}▒█░░▒█ ▀░░▀ ▀░░▀ ▀░░▀ ▀▀▀▀ ▀▀▀ ▀░▀▀${N}"
-    echo -e "An Androidacy Project"
-    echo -e "For more, visit androidacy.com"
+	echo -e "An Androidacy Project"
+	echo -e "For more, visit androidacy.com"
 	sleep 2
 }
 do_banner

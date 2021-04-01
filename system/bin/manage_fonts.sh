@@ -1,32 +1,42 @@
 #!/data/adb/modules/fontrevival/tools/busybox ash
 # shellcheck shell=ash
 # shellcheck disable=SC2169
-G='\e[01;32m' 
-R='\e[01;31m' 
-Y='\e[01;33m' 
-B='\e[01;34m' 
-V='\e[01;35m' 
-Bl='\e[01;30m' 
-C='\e[01;36m' 
-W='\e[01;37m' 
+# shellcheck disable=SC2034
+G='\e[01;32m'
+R='\e[01;31m'
+Y='\e[01;33m'
+B='\e[01;34m'
+V='\e[01;35m'
+Bl='\e[01;30m'
+C='\e[01;36m'
+W='\e[01;37m'
 BGBL='\e[1;30;47m'
-N='\e[0m' 
-loadBar=' ' 
-[ -n "$1" -a "$1" == "-nc" ] && shift && NC=true
-[ "$NC" -o -n "$ANDROID_SOCKET_adbd" ] && {
-  G=''; R=''; Y=''; B=''; V=''; Bl=''; C=''; W=''; N=''; BGBL=''; loadBar='=';
-}
+N='\e[0m'
+# shellcheck disable=SC2154
+if test -n "${ANDROID_SOCKET_adbd}"; then
+    G=''
+    R=''
+    Y=''
+    B=''
+    V=''
+    Bl=''
+    C=''
+    W=''
+    N=''
+    BGBL=''
+    loadBar='='
+fi
 div="${Bl}$(printf '%*s' 50 '' | tr " " "=")${N}"
 do_banner() {
-	clear 
+    clear
     echo -e " "
-	echo -e "${B}▒█▀▀▀ █▀▀█ █▀▀▄ ▀▀█▀▀ ${N}"
-	echo -e "${B}▒█▀▀▀ █░░█ █░░█ ░░█░░ ${N}"
-	echo -e "${B}▒█░░░ ▀▀▀▀ ▀░░▀ ░░▀░░ ${N}"
-	echo -e " "
-	echo -e "${B}▒█▀▄▀█ █▀▀█ █▀▀▄ █▀▀█ █▀▀▀ █▀▀ █▀▀█ ${N}"
-	echo -e "${B}▒█▒█▒█ █▄▄█ █░░█ █▄▄█ █░▀█ █▀▀ █▄▄▀ ${N}"
-	echo -e "${B}▒█░░▒█ ▀░░▀ ▀░░▀ ▀░░▀ ▀▀▀▀ ▀▀▀ ▀░▀▀${N}"
+    echo -e "${B}▒█▀▀▀ █▀▀█ █▀▀▄ ▀▀█▀▀ ${N}"
+    echo -e "${B}▒█▀▀▀ █░░█ █░░█ ░░█░░ ${N}"
+    echo -e "${B}▒█░░░ ▀▀▀▀ ▀░░▀ ░░▀░░ ${N}"
+    echo -e " "
+    echo -e "${B}▒█▀▄▀█ █▀▀█ █▀▀▄ █▀▀█ █▀▀▀ █▀▀ █▀▀█ ${N}"
+    echo -e "${B}▒█▒█▒█ █▄▄█ █░░█ █▄▄█ █░▀█ █▀▀ █▄▄▀ ${N}"
+    echo -e "${B}▒█░░▒█ ▀░░▀ ▀░░▀ ▀░░▀ ▀▀▀▀ ▀▀▀ ▀░▀▀${N}"
     echo -e "An Androidacy Project"
     echo -e "For more, visit androidacy.com"
     sleep 1
@@ -75,14 +85,16 @@ set -euo pipefail
 trap 'it_failed $?' EXIT
 clear
 e_spinner() {
-  PID=$!
-  h=0; anim='-\|/';
-  while [ -d /proc/$PID ]; do
-    h=$(((h+1)%4))
-    sleep 0.05
-    printf "\r${@} [${anim:$h:1}]"
-  done
-}                 
+    PID=$!
+    h=0
+    anim='-\|/'
+    while [ -d /proc/$PID ]; do
+        h=$(((h + 1) % 4))
+        sleep 0.05
+        # shellcheck disable=SC2145,SC2059
+        printf "\r${@} [${anim:$h:1}]"
+    done
+}
 do_quit() {
     clear
     do_banner
@@ -90,7 +102,7 @@ do_quit() {
     echo -e "${G}Goodbye${N}"
     sleep 2
     exit 0
-} 
+}
 if ! $NR; then
     echo -e "${R}Do not call this script directly! Instead call just 'manage_fonts'${N}"
     it_failed $?
@@ -137,15 +149,17 @@ font_select() {
         sleep 1
         menu_set
     fi
-    test_connection & e_spinner "${Y}Checking for internet access...${N}"
+    test_connection &
+    e_spinner "${Y}Checking for internet access...${N}"
     if test $? -ne 0; then
         echo -e "${R}- No internet access!${N}"
         echo -e "${R}- For now this module requires internet access${N}"
         echo -e "${R}- Exiting${N}"
         it_failed $?
     else
-		do_banner
-        curl -kL https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip >"$EXT_DATA"/"$a".zip & e_spinner "${G} Downloading $a font...${N}"
+        do_banner
+        curl -kL https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip >"$EXT_DATA"/"$a".zip &
+        e_spinner "${G} Downloading $a font...${N}"
         if test $? -ne 0; then
             clear
             echo -e "${R}ERROR: INVALID SELECTION${N}"
@@ -155,7 +169,8 @@ font_select() {
             font_select
         else
             sleep 2
-            unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null & e_spinner "${G} Installing $a font...${N}"
+            unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null &
+            e_spinner "${G} Installing $a font...${N}"
             echo -e " "
             echo -e "${G}Install success!${N}"
             sleep 1.5
@@ -202,16 +217,18 @@ emoji_select() {
         sleep 1
         menu_set
     fi
-    test_connection & e_spinner "${Y}Checking for internet access...${N}"
+    test_connection &
+    e_spinner "${Y}Checking for internet access...${N}"
     if test $? -ne 0; then
         echo -e "${R}- No internet access!${N}"
         echo -e "${R}- For now this module requires internet access${N}"
         echo -e "${R}- Exiting${N}"
         it_failed $?
     else
-		 do_banner
-         sleep 0.2
-        curl -kL https://dl.androidacy.com/downloads/fontifier-files/emojis/"$a".zip >"$EXT_DATA"/"$a".zip & e_spinner "${G} Downloading $a emoji...${N}"
+        do_banner
+        sleep 0.2
+        curl -kL https://dl.androidacy.com/downloads/fontifier-files/emojis/"$a".zip >"$EXT_DATA"/"$a".zip &
+        e_spinner "${G} Downloading $a emoji...${N}"
         if test $? -ne 0; then
             clear
             echo -e "${R}ERROR: INVALID SELECTION${N}"
@@ -221,7 +238,8 @@ emoji_select() {
             emoji_select
         else
             sleep 2
-            unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null & e_spinner "${G} Installing $a emoji...${N}"
+            unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null &
+            e_spinner "${G} Installing $a emoji...${N}"
             echo -e " "
             echo -e "${G}Install success!${N}"
             sleep 1.5
@@ -233,7 +251,8 @@ emoji_select() {
 update_lists() {
     do_banner
     echo -e "$div"
-    test_connection & e_spinner "${Y}Checking for internet access...${N}"
+    test_connection &
+    e_spinner "${Y}Checking for internet access...${N}"
     if test $? -ne 0; then
         echo -e "${R}- No internet access!${N}"
         echo -e "${R}- For now this module requires internet access${N}"
@@ -241,13 +260,14 @@ update_lists() {
         it_failed $?
     else
         mkdir -p "$MODDIR"/lists
-		dl_l () {
-        	curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt >"$MODDIR"/lists/fonts-list.txt
-        	curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODDIR"/lists/emojis-list.txt
-        sed -i s/[.]zip//gi "$MODDIR"/lists/*
-        cp "$MODDIR"/lists/* "$EXT_DATA"/lists
+        dl_l() {
+            curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt >"$MODDIR"/lists/fonts-list.txt
+            curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODDIR"/lists/emojis-list.txt
+            sed -i s/[.]zip//gi "$MODDIR"/lists/*
+            cp "$MODDIR"/lists/* "$EXT_DATA"/lists
         }
-        dl_l & e_spinner "${G} Downloading fresh lists...${N}"
+        dl_l &
+        e_spinner "${G} Downloading fresh lists...${N}"
         sleep 1
         echo -e " "
         echo -e "${Y}Lists updated! Returning to menu${N}"
@@ -256,28 +276,29 @@ update_lists() {
         menu_set
     fi
 }
-get_id() { 
-  sed -n 's/^name=//p' ${1}; 
+get_id() {
+    sed -n 's/^name=//p' "${1}"
 }
 detect_others() {
     for i in /data/adb/modules/*/*; do
-  if [[ $i != *fontrevival ]] && [ ! -f $i/disable ] && [ -d $i/system/fonts ]; then
-    NAME=$(get_id $i/module.prop)
-    echo -e "${R} ⚠ ${N}"
-    echo -e "${R} ⚠ Module editing fonts detected${N}"
-    echo -e "${R} ⚠ Module - $NAME${N}"
-    echo -e "${R} ⚠ Please remove said module and retry${N}"
-    sleep 4
-    it_failed
-  fi
-done
-} 
-reboot(){
-	do_banner
-	echo -e "$div"
-	echo -e "${R}Press Ctrl-C to cancel reboot${N}"
-	sleep 5 & e_spinner "${R} Rebooting in five seconds.${N}"
-	setprop sys.powerctl reboot
+        if test "$i" != "*fontrevival" && test ! -f "$i"/disable && test -d "$i"/system/fonts; then
+            NAME=$(get_id "$i"/module.prop)
+            echo -e "${R} ⚠ ${N}"
+            echo -e "${R} ⚠ Module editing fonts detected${N}"
+            echo -e "${R} ⚠ Module - $NAME${N}"
+            echo -e "${R} ⚠ Please remove said module and retry${N}"
+            sleep 4
+            it_failed
+        fi
+    done
+}
+reboot() {
+    do_banner
+    echo -e "$div"
+    echo -e "${R}Press Ctrl-C to cancel reboot${N}"
+    sleep 5 &
+    e_spinner "${R} Rebooting in five seconds.${N}"
+    setprop sys.powerctl reboot
 }
 menu_set() {
     while :; do
@@ -288,7 +309,7 @@ menu_set() {
         echo -e "${G}1. Change your font${N}"
         echo -e "${G}2. Change your emoji${N}"
         echo -e "${G}3. Update font and emoji lists${N}"
-    	echo -e "${G}4. Reboot to apply changes${N}"
+        echo -e "${G}4. Reboot to apply changes${N}"
         echo -e "${G}5. Quit${N}"
         echo -e "$div"
         echo -e "${G}Your choice:${N}"
@@ -297,7 +318,7 @@ menu_set() {
         1*) font_select ;;
         2*) emoji_select ;;
         3*) update_lists ;;
-        4*) reboot;;
+        4*) reboot ;;
         5*) do_quit ;;
         *) echo -e "${R}Invalid option, please try again...${N}" && sleep 2 && menu_set ;;
         esac

@@ -1,2 +1,6 @@
 echo "Please wait, setting up enviroment..."
-ASH_STANDALONE=1 NATIVE_RUN=true /data/adb/magisk/busybox ash /system/bin/fontifier.sh
+if test "$(id -u)" -ne 0; then
+	echo -e "Please run this script as root!"
+	exit 1
+fi
+ASH_STANDALONE=1 NR=true /data/adb/magisk/busybox ash /system/bin/manage_fonts.sh

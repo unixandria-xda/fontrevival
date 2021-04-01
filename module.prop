@@ -1,7 +1,6 @@
 id=fontrevival
 name=Font Manager
-version=v3.0.0-beta1
-versionCode=26
+version=v3.0.0-beta2
+versionCode=27
 author=Androidacy
-description=The hottest new way to theme your fonts and emojis. with over 200 choices and counting!
-support=https://t.me/androidacy_announce
+description=The hottest new way to theme your fonts and emojis. with over 200 choices and counting! Website: www.androidacy.com

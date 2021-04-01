@@ -1,22 +1,19 @@
 # shellcheck shell=ash
 do_banner() {
-	cat <<"EOF"
-███████  ██████  ███    ██ ████████                           
-██      ██    ██ ████   ██    ██                              
-█████   ██    ██ ██ ██  ██    ██                              
-██      ██    ██ ██  ██ ██    ██                              
-██       ██████  ██   ████    ██                              
-                                                              
-███    ███  █████  ███    ██  █████   ██████  ███████ ██████  
-████  ████ ██   ██ ████   ██ ██   ██ ██       ██      ██   ██ 
-██ ████ ██ ███████ ██ ██  ██ ███████ ██   ███ █████   ██████  
-██  ██  ██ ██   ██ ██  ██ ██ ██   ██ ██    ██ ██      ██   ██ 
-██      ██ ██   ██ ██   ████ ██   ██  ██████  ███████ ██   ██ 
-EOF
+	echo -e " "
+	echo -e "${B}▒█▀▀▀ █▀▀█ █▀▀▄ ▀▀█▀▀ ${N}"
+	echo -e "${B}▒█▀▀▀ █░░█ █░░█ ░░█░░ ${N}"
+	echo -e "${B}▒█░░░ ▀▀▀▀ ▀░░▀ ░░▀░░ ${N}"
+	echo -e " "
+	echo -e "${B}▒█▀▄▀█ █▀▀█ █▀▀▄ █▀▀█ █▀▀▀ █▀▀ █▀▀█ ${N}"
+	echo -e "${B}▒█▒█▒█ █▄▄█ █░░█ █▄▄█ █░▀█ █▀▀ █▄▄▀ ${N}"
+	echo -e "${B}▒█░░▒█ ▀░░▀ ▀░░▀ ▀░░▀ ▀▀▀▀ ▀▀▀ ▀░▀▀${N}"
+    echo -e "An Androidacy Project"
+    echo -e "For more, visit androidacy.com"
 	sleep 2
 }
 do_banner
-ui_print "ⓘ Welcome to Fontifier!"
+ui_print "ⓘ Welcome to Font Manager!"
 ui_print "ⓘ Setting up enviroment..."
 test_connection() {
 	ui_print "ⓘ Testing internet connectivity"
@@ -39,7 +36,9 @@ get_lists() {
 		mkdir -p "$EXT_DATA"/emoji
 		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt >"$MODPATH"/lists/fonts-list.txt
 		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODPATH"/lists/emojis-list.txt
+		sed -i s/[.]zip//gi "$MODPATH"/lists/*
 		mkdir -p "$MODPATH"/"$(find /*/etc | grep fonts.xml | sed 's/fonts[.]xml//')"
+		cp "$MODPATH"/lists/* "$EXT_DATA"/lists
 		curl -kL https://dl.androidacy.com/downloads/fontifier-files/xml/fonts.xml >"$MODPATH"/"$(find /*/etc | grep fonts.xml)"
 	fi
 }
@@ -67,4 +66,4 @@ extra_cleanup
 	echo "Support and contact: https://www.anroidacy.com/contact/"
 } >"$EXT_DATA"/README.txt
 ui_print "⚠ Please make sure not to have any other font changing modules installed ⚠"
-ui_print "⚠ Please remove any such module, as it conflicts with Fontifier ⚠"
+ui_print "⚠ Please remove any such module, as it conflicts with this module ⚠"

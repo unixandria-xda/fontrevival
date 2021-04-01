@@ -19,7 +19,7 @@ All the available fonts are listed in the module, there's over 200 fonts and sev
     - This may change in the future.
 
 ### Credits
-- Fonts are originally edited by John Fawkes, and emojis by John Fawkes and RKDBI
+- Fonts are originally edited by John Fawkes, and emojis by John Fawkes and RKBDI
 - Module is a project of Androidacy, licensed under Apache-2.0.
 - AMMT is copyright and developed by Androidacy, along with the distributions of the binaries used. The original binaries source code is developed by and copyright the respective developer.
 - The original fonts are made by and copyright the respective creators.

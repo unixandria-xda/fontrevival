@@ -2,6 +2,7 @@
 # shellcheck shell=ash
 # shellcheck disable=SC2169
 # shellcheck disable=SC2034
+# shellcheck disable=SC2183
 G='\e[01;32m'
 R='\e[01;31m'
 Y='\e[01;33m'
@@ -86,7 +87,7 @@ set -euo pipefail
 trap 'it_failed $?' EXIT
 clear
 no_i() {
-	do_banner
+    do_banner
     echo -e "${R}No internet access!${N}"
     echo -e "${R}For now this module requires internet access${N}"
     echo -e "${R}Exiting${N}"
@@ -129,7 +130,7 @@ font_select() {
     echo -e "$div"
     sleep 1.5
     farr="$(cat "$MODDIR"/lists/fonts-list.txt)"
-    printf "%-20s | %-20s | %-20s\n "  $farr
+    printf "%-20s | %-20s | %-20s\n " "$farr"
     sleep 1
     echo -e "$div"
     echo -e "${G}Your choice${N}"
@@ -150,7 +151,7 @@ font_select() {
     test_connection &
     e_spinner "${Y}Checking for internet access ${N}"
     if test $? -ne 0; then
-		do_banner
+        do_banner
         echo -e "${R}No internet access!${N}"
         echo -e "${R}For now this module requires internet access${N}"
         echo -e "${R}Exiting${N}"
@@ -179,7 +180,7 @@ emoji_select() {
     echo -e "$div"
     sleep 1.5
     earr="$(cat "$MODDIR"/lists/emojis-list.txt)"
-    printf "%-20s | %-20s | %-20s\n "  $earr
+    printf "%-20s | %-20s | %-20s\n " "$earr"
     sleep 1
     echo -e "$div"
     echo -e "${G}Your choice${N}"

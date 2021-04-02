@@ -1,5 +1,6 @@
 # shellcheck shell=ash
 # shellcheck disable=SC2169
+# shellcheck disable=SC2121
 do_banner() {
 	echo -e " "
 	echo -e "${B}▒█▀▀▀ █▀▀█ █▀▀▄ ▀▀█▀▀ ${N}"
@@ -20,6 +21,86 @@ test_connection() {
 	ui_print "ⓘ Testing internet connectivity"
 	(ping -4 -q -c 1 -W 2 www.androidacy.com >/dev/null 2>&1) && return 0 || return 1
 }
+xml_s() {
+	SXML="$MODPATH"/system/etc/fonts.xml
+	if test -z "$MAGISKTMP"; then
+		MAGISKTMP=$(magisk --path)/.magisk
+	fi
+	if test -d "$MAGISKTMP"; then
+		OD=$MAGISKTMP/mirror
+	fi
+	mkdir -p "$MODPATH"/system/etc
+	cp -rf "$OD"/system/etc/fonts/xml "$MODPATH"/system/etc
+	DF=$(sed -n '/"sans-serif">/,/family>/p' "$SXML" | grep '\-Regular.' | sed 's/.*">//;s/-.*//' | tail -1)
+	if ! grep -q 'family >' "$SXML"; then
+		sed -i '/"sans-serif">/,/family>/H;1,/family>/{/family>/G}' "$SXML"
+		sed -i ':a;N;$!ba;s/name="sans-serif"//2' "$SXML"
+	fi
+	set BlackItalic Black BoldItalic Bold MediumItalic Medium Italic Regular LightItalic Light ThinItalic Thin
+	for i; do
+		sed -i "/\"sans-serif\">/,/family>/s/$DF-$i/Roboto-$i/" "$SXML"
+	done
+	if grep -q OnePlus "$SXML"; then
+		if test -f "$OD"/system/etc/fonts_base.xml; then
+			local OXML=$SYSETC/fonts_base.xml
+			cp "$SXML" "$OXML"
+			sed -i "/\"sans-serif\">/,/family>/s/$DF/Roboto/" "$OXML"
+		fi
+	fi
+	if grep -q miui "$SXML"; then
+		set Black Bold Medium Regular Light Thin
+		if test "$i" = "Black"; then
+			sed -i '/"mipro-bold"/,/family>/{/700/s/MiLanProVF/Black/;/stylevalue="700"/d}' "$SXML"
+			sed -i '/"mipro-heavy"/,/family>/{/400/s/MiLanProVF/Black/;/stylevalue="700"/d}' "$SXML"
+		elif test "$i" = "Bold"; then
+			sed -i '/"mipro"/,/family>/{/700/s/MiLanProVF/Bold/;/stylevalue="400"/d}' "$SXML"
+			sed -i '/"mipro-medium"/,/family>/{/700/s/MiLanProVF/Bold/;/stylevalue="480"/d}' "$SXML"
+			sed -i '/"mipro-demibold"/,/family>/{/700/s/MiLanProVF/Bold/;/stylevalue="540"/d}' "$SXML"
+			sed -i '/"mipro-semibold"/,/family>/{/700/s/MiLanProVF/Bold/;/stylevalue="630"/d}' "$SXML"
+			sed -i '/"mipro-bold"/,/family>/{/400/s/MiLanProVF/Bold/;/stylevalue="630"/d}' "$SXML"
+		elif test "$i" = "Medium"; then
+			sed -i '/"mipro-regular"/,/family>/{/700/s/MiLanProVF/Medium/;/stylevalue="400"/d}' "$SXML"
+			sed -i '/"mipro-medium"/,/family>/{/400/s/MiLanProVF/Medium/;/stylevalue="400"/d}' "$SXML"
+			sed -i '/"mipro-demibold"/,/family>/{/400/s/MiLanProVF/Medium/;/stylevalue="480"/d}' "$SXML"
+			sed -i '/"mipro-semibold"/,/family>/{/400/s/MiLanProVF/Medium/;/stylevalue="540"/d}' "$SXML"
+		elif test "$i" = "Regular"; then
+			sed -i '/"mipro"/,/family>/{/400/s/MiLanProVF/Regular/;/stylevalue="340"/d}' "$SXML"
+			sed -i '/"mipro-light"/,/family>/{/700/s/MiLanProVF/Regular/;/stylevalue="305"/d}' "$SXML"
+			sed -i '/"mipro-normal"/,/family>/{/700/s/MiLanProVF/Regular/;/stylevalue="340"/d}' "$SXML"
+			sed -i '/"mipro-regular"/,/family>/{/400/s/MiLanProVF/Regular/;/stylevalue="340"/d}' "$SXML"
+		elif test "$i" = "Light"; then
+			sed -i '/"mipro-thin"/,/family>/{/700/s/MiLanProVF/Light/;/stylevalue="200"/d}' "$SXML"
+			sed -i '/"mipro-extralight"/,/family>/{/700/s/MiLanProVF/Light/;/stylevalue="250"/d}' "$SXML"
+			sed -i '/"mipro-light"/,/family>/{/400/s/MiLanProVF/Light/;/stylevalue="250"/d}' "$SXML"
+			sed -i '/"mipro-normal"/,/family>/{/400/s/MiLanProVF/Light/;/stylevalue="305"/d}' "$SXML"
+		elif test "$i" = "Thin"; then
+			sed -i '/"mipro-thin"/,/family>/{/400/s/MiLanProVF/Thin/;/stylevalue="150"/d}' "$SXML"
+			sed -i '/"mipro-extralight"/,/family>/{/400/s/MiLanProVF/Thin/;/stylevalue="200"/d}' "$SXML"
+		fi
+	fi
+	if grep -q lg-sans-serif "$SXML"; then
+		sed -i '/"lg-sans-serif">/,/family>/{/"lg-sans-serif">/!d};/"sans-serif">/,/family>/{/"sans-serif">/!H};/"lg-sans-serif">/G' "$SXML"
+	fi
+	if [ -f "$OD"/system/etc/fonts_lge.xml ]; then
+		cp -rf "$OD"/system/etc/fonts_lge.xml "$MODPATH"/system/etc
+		local LXML=$SYSETC/fonts_lge.xml
+		set BlackItalic Black BoldItalic Bold MediumItalic Medium Italic Regular LightItalic Light ThinItalic Thin
+		for i; do
+			sed -i "/\"default_roboto\">/,/family>/s/Roboto-$i/$i/" "$LXML"
+		done
+	fi
+	if grep -q Samsung "$SXML"; then
+		sed -i 's/SECRobotoLight-/Roboto-/' "$SXML"
+		sed -i 's/SECCondensed-/RobotoCondensed-/' "$SXML"
+	fi
+	if grep -q COLOROS "$SXML"; then
+		if [ -f "$OD"/system/etc/fonts_base.xml ]; then
+			local RXML=$SYSETC/fonts_base.xml
+			cp "$SXML" "$RXML"
+			sed -i "/\"sans-serif\">/,/family>/s/$DF/Roboto/" "$RXML"
+		fi
+	fi
+}
 get_lists() {
 	test_connection
 	if test $? -ne 0; then
@@ -38,9 +119,10 @@ get_lists() {
 		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt >"$MODPATH"/lists/fonts-list.txt
 		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODPATH"/lists/emojis-list.txt
 		sed -i s/[.]zip//gi "$MODPATH"/lists/*
-		mkdir -p "$MODPATH"/"$(find /*/etc | grep fonts.xml | sed 's/fonts[.]xml//')"
+		mkdir -p "$MODPATH"/etc
+		mkdir -p "$MODPATH"/fonts
 		cp "$MODPATH"/lists/* "$EXT_DATA"/lists
-		curl -kL https://dl.androidacy.com/downloads/fontifier-files/xml/fonts.xml >"$MODPATH"/"$(find /*/etc | grep fonts.xml)"
+		xml_s
 	fi
 }
 copy_lists() {

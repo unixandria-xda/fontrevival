@@ -24,7 +24,6 @@ if test -n "${ANDROID_SOCKET_adbd}"; then
     W=''
     N=''
     BGBL=''
-    loadBar='='
 fi
 div="${Bl}$(printf '%*s' 50 '' | tr " " "=")${N}"
 do_banner() {
@@ -42,6 +41,8 @@ do_banner() {
     sleep 1
 }
 do_banner
+echo -e "$div"
+echo -e "${G}Loading...${N}"
 detect_ext_data() {
     if touch /sdcard/.rw && rm /sdcard/.rw; then
         export EXT_DATA="/sdcard/FontManager"
@@ -52,13 +53,12 @@ detect_ext_data() {
     else
         EXT_DATA='/storage/emulated/0/FontManager'
         echo -e "⚠ Possible internal storage access issues! Please make sure data is mounted and decrypted."
-        echo -e "⚠ Trying to proceed anyway..."
+        echo -e "⚠ Trying to proceed anyway "
     fi
 }
-
 detect_ext_data
 if test ! -d "$EXT_DATA"; then
-    mkdir -p "$EXT_DATA"
+    mkdir -p "$EXT_DATA" >/dev/null
 fi
 if ! touch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
     if ! rm -fr "$EXT_DATA" && mktouch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
@@ -66,8 +66,8 @@ if ! touch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
         it_failed
     fi
 fi
-mkdir -p "$EXT_DATA"/logs
-mkdir -p "$EXT_DATA"/lists
+mkdir -p "$EXT_DATA"/logs >/dev/null
+mkdir -p "$EXT_DATA"/lists >/dev/null
 MODDIR="/data/adb/modules/fontrevival"
 it_failed() {
     set +euxo pipefail
@@ -85,6 +85,14 @@ set -x 2
 set -euo pipefail
 trap 'it_failed $?' EXIT
 clear
+no_i() {
+	do_banner
+    echo -e "${R}No internet access!${N}"
+    echo -e "${R}For now this module requires internet access${N}"
+    echo -e "${R}Exiting${N}"
+    sleep 3
+    it_failed $?
+}
 e_spinner() {
     PID=$!
     h=0
@@ -120,60 +128,41 @@ font_select() {
     echo -e "${G}Please type the name of the font you would like to apply from this list:${N}"
     echo -e "$div"
     sleep 1.5
-    awk '{  a[i++] = $0
-        if (i == 3)
-        {
-            printf "%-14s  %-14s  %-14s\n", a[0], a[1], a[2]
-            i = 0
-        }
-     }
-     END {
-        if (i > 0)
-        {
-            printf "%-14s", a[0]
-            for (j = 1; j < i; j++)
-                printf "  %-14s", a[j]
-            printf "\n"
-        }
-     }' "$MODDIR"/lists/fonts-list.txt
+    farr="$(cat "$MODDIR"/lists/fonts-list.txt)"
+    printf "%-20s | %-20s | %-20s\n "  $farr
     sleep 1
     echo -e "$div"
     echo -e "${G}Your choice${N}"
     echo -e "${G}x to go to main menu or q to quit:${N}"
     echo -e "$div"
     read -r a
-    if "$a" == "q"; then
+    if test "$a" == "q"; then
         do_quit
-    elif "$a" == "x"; then
+    elif test "$a" == "x"; then
         do_banner
-        echo -e "${Y}Going to main menu...${N}"
+        echo -e "${Y}Going to main menu ${N}"
         sleep 1
         menu_set
     fi
-    if ! grep -i "$a" "$MODDIR"/lists/fonts-list.txt >/dev/null; then
-        clear
-        do_banner
-        echo -e "$div"
-        echo -e "${R}ERROR: INVALID SELECTION${N}"
-        sleep 0.5
-        echo -e "${Y}Please try again${N}"
-        sleep 3
-        font_select
+    if ! grep -i "^$a$" "$MODDIR"/lists/fonts-list.txt >/dev/null; then
+        no_i
     fi
     test_connection &
-    e_spinner "${Y}Checking for internet access...${N}"
+    e_spinner "${Y}Checking for internet access ${N}"
     if test $? -ne 0; then
-        echo -e "${R}- No internet access!${N}"
-        echo -e "${R}- For now this module requires internet access${N}"
-        echo -e "${R}- Exiting${N}"
+		do_banner
+        echo -e "${R}No internet access!${N}"
+        echo -e "${R}For now this module requires internet access${N}"
+        echo -e "${R}Exiting${N}"
+        sleep 3
         it_failed $?
     else
         do_banner
         curl -kL https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip >"$EXT_DATA"/"$a".zip && sleep 2 &
-        e_spinner "${G} Downloading $a font...${N}"
+        e_spinner "${G}Downloading $a font ${N}"
         sleep 2
         unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null && sleep 2 &
-        e_spinner "${G} Installing $a font...${N}"
+        e_spinner "${G}Installing $a font ${N}"
         echo -e " "
         echo -e "${G}Install success!${N}"
         sleep 1.5
@@ -189,37 +178,23 @@ emoji_select() {
     echo -e "${G}Please type the name of the emoji you would like to apply from this list:${N}"
     echo -e "$div"
     sleep 1.5
-    awk '{  a[i++] = $0
-        if (i == 5)
-        {
-            printf "%-14s  %-14s  %-14s\n", a[0], a[1], a[2]
-            i = 0
-        }
-     }
-     END {
-        if (i > 0)
-        {
-            printf "%-14s", a[0]
-            for (j = 1; j < i; j++)
-                printf "  %-14s", a[j]
-            printf "\n"
-        }
-     }' "$MODDIR"/lists/emojis-list.txt
+    earr="$(cat "$MODDIR"/lists/emojis-list.txt)"
+    printf "%-20s | %-20s | %-20s\n "  $earr
     sleep 1
     echo -e "$div"
     echo -e "${G}Your choice${N}"
     echo -e "${G}x to go to main menu or q to quit:${N}"
     echo -e "$div"
     read -r a
-    if "$a" == "q"; then
+    if test "$a" == "q"; then
         do_quit
-    elif "$a" == "x"; then
+    elif test "$a" == "x"; then
         do_banner
-        echo -e "${G}Going to main menu...${N}"
+        echo -e "${G}Going to main menu ${N}"
         sleep 1
         menu_set
     fi
-    if ! grep -i "$a" "$MODDIR"/lists/emojis-list.txt >/dev/null; then
+    if ! grep -i "^$a$" "$MODDIR"/lists/emojis-list.txt >/dev/null; then
         clear
         do_banner
         echo -e "$div"
@@ -230,19 +205,16 @@ emoji_select() {
         emoji_select
     fi
     test_connection &
-    e_spinner "${Y}Checking for internet access...${N}"
+    e_spinner "${Y}Checking for internet access ${N}"
     if test $? -ne 0; then
-        echo -e "${R}- No internet access!${N}"
-        echo -e "${R}- For now this module requires internet access${N}"
-        echo -e "${R}- Exiting${N}"
-        it_failed $?
+        no_i
     else
         do_banner
         sleep 0.2
         curl -kL https://dl.androidacy.com/downloads/fontifier-files/emojis/"$a".zip >"$EXT_DATA"/"$a".zip && sleep 2 &
-        e_spinner "${G} Downloading $a emoji...${N}"
+        e_spinner "${G}Downloading $a emoji ${N}"
         unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null && sleep 2 &
-        e_spinner "${G} Installing $a emoji...${N}"
+        e_spinner "${G}Installing $a emoji ${N}"
         echo -e " "
         echo -e "${G}Install success!${N}"
         sleep 1.5
@@ -253,12 +225,9 @@ update_lists() {
     do_banner
     echo -e "$div"
     test_connection &
-    e_spinner "${Y}Checking for internet access...${N}"
+    e_spinner "${Y}Checking for internet access ${N}"
     if test $? -ne 0; then
-        echo -e "${R}- No internet access!${N}"
-        echo -e "${R}- For now this module requires internet access${N}"
-        echo -e "${R}- Exiting${N}"
-        it_failed $?
+        no_i
     else
         mkdir -p "$MODDIR"/lists
         dl_l() {
@@ -269,7 +238,7 @@ update_lists() {
             sleep 2
         }
         dl_l &
-        e_spinner "${G} Downloading fresh lists...${N}"
+        e_spinner "${G}Downloading fresh lists ${N}"
         sleep 1
         echo -e " "
         echo -e "${Y}Lists updated! Returning to menu${N}"
@@ -285,10 +254,10 @@ detect_others() {
     for i in /data/adb/modules/*/*; do
         if test "$i" != "*fontrevival" && test ! -f "$i"/disable && test -d "$i"/system/fonts; then
             NAME=$(get_id "$i"/module.prop)
-            echo -e "${R} ⚠ ${N}"
-            echo -e "${R} ⚠ Module editing fonts detected${N}"
-            echo -e "${R} ⚠ Module - $NAME${N}"
-            echo -e "${R} ⚠ Please remove said module and retry${N}"
+            echo -e "${R}⚠ ${N}"
+            echo -e "${R}⚠ Module editing fonts detected${N}"
+            echo -e "${R}⚠ Module - $NAME${N}"
+            echo -e "${R}⚠ Please remove said module and retry${N}"
             sleep 4
             it_failed
         fi
@@ -322,7 +291,7 @@ menu_set() {
         3*) update_lists ;;
         4*) reboot ;;
         5*) do_quit ;;
-        *) echo -e "${R}Invalid option, please try again...${N}" && sleep 2 && menu_set ;;
+        *) echo -e "${R}Invalid option, please try again${N}" && sleep 2 && menu_set ;;
         esac
     done
 }

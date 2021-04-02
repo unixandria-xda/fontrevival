@@ -130,7 +130,8 @@ font_select() {
     echo -e "$div"
     sleep 1.5
     farr="$(cat "$MODDIR"/lists/fonts-list.txt)"
-    printf "%-20s | %-20s | %-20s\n " "$farr"
+    # shellcheck disable=SC2086
+    printf "%-20s | %-20s | %-20s\n " $farr
     sleep 1
     echo -e "$div"
     echo -e "${G}Your choice${N}"
@@ -180,7 +181,8 @@ emoji_select() {
     echo -e "$div"
     sleep 1.5
     earr="$(cat "$MODDIR"/lists/emojis-list.txt)"
-    printf "%-20s | %-20s | %-20s\n " "$earr"
+    # shellcheck disable=SC2086
+    printf "%-20s | %-20s | %-20s\n " $earr
     sleep 1
     echo -e "$div"
     echo -e "${G}Your choice${N}"

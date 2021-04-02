@@ -22,6 +22,7 @@ test_connection() {
 	(ping -4 -q -c 1 -W 2 www.androidacy.com >/dev/null 2>&1) && return 0 || return 1
 }
 xml_s() {
+	ui_print "ⓘ Registering our fonts"
 	SXML="$MODPATH"/system/etc/fonts.xml
 	if test -z "$MAGISKTMP"; then
 		MAGISKTMP=$(magisk --path)/.magisk
@@ -30,7 +31,7 @@ xml_s() {
 		OD=$MAGISKTMP/mirror
 	fi
 	mkdir -p "$MODPATH"/system/etc
-	cp -rf "$OD"/system/etc/fonts/xml "$MODPATH"/system/etc
+	cp -rf "$OD"/system/etc/fonts.xml "$MODPATH"/system/etc
 	DF=$(sed -n '/"sans-serif">/,/family>/p' "$SXML" | grep '\-Regular.' | sed 's/.*">//;s/-.*//' | tail -1)
 	if ! grep -q 'family >' "$SXML"; then
 		sed -i '/"sans-serif">/,/family>/H;1,/family>/{/family>/G}' "$SXML"
@@ -119,8 +120,8 @@ get_lists() {
 		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt >"$MODPATH"/lists/fonts-list.txt
 		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODPATH"/lists/emojis-list.txt
 		sed -i s/[.]zip//gi "$MODPATH"/lists/*
-		mkdir -p "$MODPATH"/etc
-		mkdir -p "$MODPATH"/fonts
+		mkdir -p "$MODPATH"/system/etc
+		mkdir -p "$MODPATH"/system/fonts
 		cp "$MODPATH"/lists/* "$EXT_DATA"/lists
 		xml_s
 	fi

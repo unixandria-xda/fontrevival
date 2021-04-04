@@ -3,6 +3,9 @@
 # shellcheck disable=SC2169
 # shellcheck disable=SC2034
 # shellcheck disable=SC2183
+# shellcheck disable=SC2145
+# shellcheck disable=SC2155
+# shellcheck disable=SC2059
 G='\e[01;32m'
 R='\e[01;31m'
 Y='\e[01;33m'
@@ -15,35 +18,22 @@ BGBL='\e[1;30;47m'
 N='\e[0m'
 # shellcheck disable=SC2154
 if test -n "${ANDROID_SOCKET_adbd}"; then
-    G=''
-    R=''
-    Y=''
-    B=''
-    V=''
-    Bl=''
-    C=''
-    W=''
-    N=''
-    BGBL=''
+    echo -e "Please run this in a temrinal emulator on device!"
+    exit 1
 fi
-div="${Bl}$(printf '%*s' 50 '' | tr " " "=")${N}"
-do_banner() {
-    clear
-    echo -e " "
-    echo -e "${B}▒█▀▀▀ █▀▀█ █▀▀▄ ▀▀█▀▀ ${N}"
-    echo -e "${B}▒█▀▀▀ █░░█ █░░█ ░░█░░ ${N}"
-    echo -e "${B}▒█░░░ ▀▀▀▀ ▀░░▀ ░░▀░░ ${N}"
-    echo -e " "
-    echo -e "${B}▒█▀▄▀█ █▀▀█ █▀▀▄ █▀▀█ █▀▀▀ █▀▀ █▀▀█ ${N}"
-    echo -e "${B}▒█▒█▒█ █▄▄█ █░░█ █▄▄█ █░▀█ █▀▀ █▄▄▀ ${N}"
-    echo -e "${B}▒█░░▒█ ▀░░▀ ▀░░▀ ▀░░▀ ▀▀▀▀ ▀▀▀ ▀░▀▀${N}"
-    echo -e "An Androidacy Project"
-    echo -e "For more, visit androidacy.com"
-    sleep 1
+COLUMNS="$(stty size | cut -d" " -f2)"
+div="${Bl}$(printf '%*s' $((COLUMNS * 90 / 100)) '' | tr " " "=")${N}"
+it_failed() {
+    set +euxo pipefail
+    if "$1" -ne "0"; then
+        echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
+        echo -e "${R}Something bad happened and the script has encountered an issue${N}"
+        echo -e "${R}Make sure you're following instructions and try again!${N}"
+        echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
+        echo -e "Exiting the script now!"
+    fi
+    exit "$1"
 }
-do_banner
-echo -e "$div"
-echo -e "${G}Loading...${N}"
 detect_ext_data() {
     if touch /sdcard/.rw && rm /sdcard/.rw; then
         export EXT_DATA="/sdcard/FontManager"
@@ -55,6 +45,7 @@ detect_ext_data() {
         EXT_DATA='/storage/emulated/0/FontManager'
         echo -e "⚠ Possible internal storage access issues! Please make sure data is mounted and decrypted."
         echo -e "⚠ Trying to proceed anyway "
+        sleep 2
     fi
 }
 detect_ext_data
@@ -70,22 +61,30 @@ fi
 mkdir -p "$EXT_DATA"/logs >/dev/null
 mkdir -p "$EXT_DATA"/lists >/dev/null
 MODDIR="/data/adb/modules/fontrevival"
-it_failed() {
-    set +euxo pipefail
-    if "$1" -ne "0"; then
-        echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
-        echo -e "${R}Something bad happened and the script has encountered an issue${N}"
-        echo -e "${R}Make sure you're following instructions and try again!${N}"
-        echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
-        echo -e "Exiting the script now!"
-    fi
-    exit "$1"
-}
 exec 3>&2 2>"$EXT_DATA"/logs/script.log
 set -x 2
-set -euo pipefail
+set -eo pipefail
 trap 'it_failed $?' EXIT
 clear
+do_banner() {
+    clear
+    echo -e "${B}  _____              _                           ${N}"
+    echo -e "${B} |  ___|___   _ __  | |_                         ${N}"
+    echo -e "${B} | |_  / _ \ | '_ \ | __|                        ${N}"
+    echo -e "${B} |  _|| (_) || | | || |_                         ${N}"
+    echo -e "${B} |_|   \___/ |_| |_| \__|                        ${N}"
+    echo -e "${B}  __  __                                         ${N}"
+    echo -e "${B} |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ${N}"
+    echo -e "${B} | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|${N}"
+    echo -e "${B} | |  | || (_| || | | || (_| || (_| ||  __/| |   ${N}"
+    echo -e "${B} |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ${N}"
+    echo -e "${B}                               |___/             ${N}"
+    echo -e "${B}An Androidacy project - androidacy.com${N}"
+    sleep 1
+}
+do_banner
+echo -e "$div"
+echo -e "${G}Loading...${N}"
 no_i() {
     do_banner
     echo -e "${R}No internet access!${N}"
@@ -128,15 +127,14 @@ font_select() {
     sleep 0.5
     echo -e "${G}Please type the name of the font you would like to apply from this list:${N}"
     echo -e "$div"
-    sleep 1.5
+    sleep 2
     farr="$(cat "$MODDIR"/lists/fonts-list.txt)"
     # shellcheck disable=SC2086
     printf "%-20s | %-20s | %-20s\n " $farr
     sleep 1
     echo -e "$div"
-    echo -e "${G}Your choice${N}"
-    echo -e "${G}x to go to main menu or q to quit:${N}"
-    echo -e "$div"
+    echo -e "${G}x to go to main menu or q to quit${N}"
+    echo -en "${G}Please make a selection => ${N}"
     read -r a
     if test "$a" == "q"; then
         do_quit
@@ -167,6 +165,7 @@ font_select() {
         e_spinner "${G}Installing $a font ${N}"
         echo -e " "
         echo -e "${G}Install success!${N}"
+        echo "$a" >"$MODDIR"/curr-font.txt
         sleep 1.5
     fi
     menu_set
@@ -179,15 +178,14 @@ emoji_select() {
     sleep 0.5
     echo -e "${G}Please type the name of the emoji you would like to apply from this list:${N}"
     echo -e "$div"
-    sleep 1.5
+    sleep 2
     earr="$(cat "$MODDIR"/lists/emojis-list.txt)"
     # shellcheck disable=SC2086
     printf "%-20s | %-20s | %-20s\n " $earr
     sleep 1
     echo -e "$div"
-    echo -e "${G}Your choice${N}"
-    echo -e "${G}x to go to main menu or q to quit:${N}"
-    echo -e "$div"
+    echo -e "${G}x to go to main menu or q to quit${N}"
+    echo -en "${G}Please make a selection => ${N}"
     read -r a
     if test "$a" == "q"; then
         do_quit
@@ -220,6 +218,7 @@ emoji_select() {
         e_spinner "${G}Installing $a emoji ${N}"
         echo -e " "
         echo -e "${G}Install success!${N}"
+        echo "$a" >"$MODDIR"/curr-emoji.txt
         sleep 1.5
     fi
     menu_set
@@ -274,26 +273,49 @@ reboot() {
     e_spinner "${R} Rebooting in five seconds.${N}"
     setprop sys.powerctl reboot
 }
+rever_st() {
+    do_banner
+    r_s() {
+        rm -fr "$MODDIR"/system/fonts/*
+        rm -fr "$MODDIR"/curr*
+        sleep 2
+    }
+    r_s &
+    e_spinner "${G}Reverting to stock fonts ${N}"
+    echo -e "${G}Stock fonts applied! Please reboot.${N}"
+    sleep 2
+    menu_set
+}
 menu_set() {
     while :; do
         detect_others
         do_banner
         echo -e "$div"
-        echo -e "${G}MAIN MENU:${N}"
+        for i in curr-font curr-emoji; do
+            if test ! -f $MODDIR/$i.txt; then
+                echo "stock" >$MODDIR/$i.txt
+            fi
+        done
+        echo -e "${G}Current font is $(cat $MODDIR/curr-font.txt)${N}"
+        echo -e "${G}Current emoji is $(cat $MODDIR/curr-emoji.txt)${N}"
+        echo -e "$div"
+        echo -e "${G}Available options:${N}"
         echo -e "${G}1. Change your font${N}"
         echo -e "${G}2. Change your emoji${N}"
         echo -e "${G}3. Update font and emoji lists${N}"
-        echo -e "${G}4. Reboot to apply changes${N}"
-        echo -e "${G}5. Quit${N}"
+        echo -e "${G}4. Revert to stock font and emoji${N}"
+        echo -e "${G}5. Reboot to apply changes${N}"
+        echo -e "${G}6. Quit${N}"
         echo -e "$div"
-        echo -e "${G}Your choice:${N}"
+        echo -en "${G}Please make a selection => ${N}"
         read -r a
         case $a in
         1*) font_select ;;
         2*) emoji_select ;;
         3*) update_lists ;;
-        4*) reboot ;;
-        5*) do_quit ;;
+        4*) rever_st ;;
+        5*) reboot ;;
+        6*) do_quit ;;
         *) echo -e "${R}Invalid option, please try again${N}" && sleep 2 && menu_set ;;
         esac
     done

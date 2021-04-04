@@ -41,6 +41,10 @@ xml_s() {
 	for i; do
 		sed -i "/\"sans-serif\">/,/family>/s/$DF-$i/Roboto-$i/" "$SXML"
 	done
+	set BlackItalic Black BoldItalic Bold MediumItalic Medium Italic Regular LightItalic Light ThinItalic Thin
+	for i; do
+		sed -i "s/NotoSerif-$i/Roboto-$i/" "$SXML"
+	done
 	if grep -q OnePlus "$SXML"; then
 		if test -f "$OD"/system/etc/fonts_base.xml; then
 			local OXML=$SYSETC/fonts_base.xml

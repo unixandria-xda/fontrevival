@@ -139,6 +139,9 @@ setup_script() {
 	mkdir "$MODPATH"/system/fonts
 }
 extra_cleanup() {
+	mkdir "$MODPATH"/tools/
+	mv "$MODPATH"/common/tools/bash-"$ARCH" "$MODPATH"/tools/bash
+	rm -fr "$MODPATH"/common/tools/
 	rm -rf "$MODPATH"/*.md
 	rm -rf "$MODPATH"/LICENSE
 }

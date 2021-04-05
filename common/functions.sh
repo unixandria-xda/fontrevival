@@ -349,6 +349,7 @@ fi
 ui_print " "
 ui_print "- Setting Permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
+chmod -R 0755 $MODPATH/tools/
 chmod -R 755 $MODPATH/system/bin/*
 if [ -d $MODPATH/system/vendor ]; then
   set_perm_recursive $MODPATH/system/vendor 0 0 0755 0644 u:object_r:vendor_file:s0

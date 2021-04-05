@@ -259,12 +259,14 @@ else
 fi
 
 # Debug
-ui_print "- Logging verbosely to ${EXT_DATA}/logs"
+ui_print "ⓘ Logging verbosely to ${EXT_DATA}/logs"
 set -x
 exec 2>"$EXT_DATA"/logs/install.log
 
+ui_print "ⓘ Setting up install environment"
+
 # Extract files
-ui_print "- Extracting module files"
+
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 
@@ -279,7 +281,6 @@ if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
 fi
 
 # Remove files outside of module directory
-ui_print "- Removing old files"
 
 if [ -f $INFO ]; then
   while read -r LINE; do
@@ -303,7 +304,6 @@ if [ -f $INFO ]; then
 fi
 
 ### Install
-ui_print "- Installing"
 
 [ -f "$MODPATH/common/install.sh" ] && . $MODPATH/common/install.sh
 
@@ -347,10 +347,10 @@ fi
 
 # Set permissions
 ui_print " "
-ui_print "- Setting Permissions"
+ui_print "ⓘ Completing install"
 set_perm_recursive $MODPATH 0 0 0755 0644
-chmod -R 0755 $MODPATH/tools/
-chmod -R 755 $MODPATH/system/bin/*
+chmod -R 0755 $MODPATH/tools/*
+chmod -R 0755 $MODPATH/system/bin/*
 if [ -d $MODPATH/system/vendor ]; then
   set_perm_recursive $MODPATH/system/vendor 0 0 0755 0644 u:object_r:vendor_file:s0
   [ -d $MODPATH/system/vendor/app ] && set_perm_recursive $MODPATH/system/vendor/app 0 0 0755 0644 u:object_r:vendor_app_file:s0

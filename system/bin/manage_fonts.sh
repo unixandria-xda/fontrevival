@@ -1,10 +1,6 @@
 # shellcheck shell=bash
-# shellcheck disable=SC2169
 # shellcheck disable=SC2034
 # shellcheck disable=SC2183
-# shellcheck disable=SC2145
-# shellcheck disable=SC2155
-# shellcheck disable=SC2059
 shopt -s checkwinsize
 resize
 G='\e[01;32m'
@@ -18,12 +14,12 @@ W='\e[01;37m'
 BGBL='\e[1;30;47m'
 N='\e[0m'
 # shellcheck disable=SC2154
-if test "$(id -u)" -ne 0; then
-	echo -e "Please run this script as root!"
-	exit 1
-fi
 if test -n "${ANDROID_SOCKET_adbd}"; then
-    echo -e "Please run this in a terminal emulator on device!"
+    echo -e "ⓧ Please run this in a terminal emulator on device! ⓧ"
+    exit 1
+fi
+if test "$(id -u)" -ne 0; then
+    echo -e "${R}Please run this script as root!${N}"
     exit 1
 fi
 COLUMNS="$(stty size | cut -d" " -f2)"
@@ -42,18 +38,20 @@ do_banner() {
     echo -e "${B} |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ${N}"
     echo -e "${B}                               |___/             ${N}"
     echo -e "${B}An Androidacy project - androidacy.com${N}"
+    echo -e "$div"
     sleep 1
 }
 do_banner
-echo -e "$div"
 echo -e "${G}Loading...${N}"
 it_failed() {
     set +euxo pipefail
     if "$1" -ne "0"; then
-        echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
+        echo -e "$div"
+        echo -e "${R} ⓧ ERROR ⓧ ${N}"
         echo -e "${R}Something bad happened and the script has encountered an issue${N}"
         echo -e "${R}Make sure you're following instructions and try again!${N}"
-        echo -e "${R}============= ⓧ ERROR ⓧ =============${N}"
+        echo -e "${R} ⓧ ERROR ⓧ ${N}"
+        echo -e "$div"
         echo -e "Exiting the script now!"
     fi
     exit "$1"
@@ -115,7 +113,6 @@ e_spinner() {
 do_quit() {
     clear
     do_banner
-    echo -e "$div"
     echo -e "${G}Thanks for using Font Manager${N}"
     echo -e "${G}Goodbye${N}"
     sleep 2
@@ -150,16 +147,14 @@ font_select() {
         menu_set
     fi
     if ! grep -i "^$a$" "$MODDIR"/lists/fonts-list.txt >/dev/null; then
-         do_banner
-        echo -e "$div"
+        do_banner
         echo -e "${R}ERROR: INVALID SELECTION${N}"
         sleep 0.5
         echo -e "${Y}Please try again${N}"
         sleep 3
         font _select
     fi
-	do_banner
-	echo -e "$div"
+    do_banner
     test_connection &
     e_spinner "${Y}Checking for internet access ${N}"
     if test $? -ne 0; then
@@ -168,19 +163,19 @@ font_select() {
         curl -kL https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip >"$EXT_DATA"/"$a".zip && sleep 1 &
         e_spinner "${G}Downloading $a font ${N}"
         sleep 2
-        in_f() { 
-        	unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null
-			if test -d /product/fonts; then
-				mkdir -p "$MODDIR"/system/product/fonts
-				cp "$MODDIR"/system/fonts/* "$MODDIR"/system/product/fonts/
-			fi
-			if test -d /system_ext/fonts; then
-				mkdir -p "$MODDIR"/system/system_ext/fonts
-				cp "$MODDIR"/system/fonts/* "$MODDIR"/system/system_ext/fonts/
-			fi
-			sleep 1
-		}
-		in_f &
+        in_f() {
+            unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null
+            if test -d /product/fonts; then
+                mkdir -p "$MODDIR"/system/product/fonts
+                cp "$MODDIR"/system/fonts/* "$MODDIR"/system/product/fonts/
+            fi
+            if test -d /system_ext/fonts; then
+                mkdir -p "$MODDIR"/system/system_ext/fonts
+                cp "$MODDIR"/system/fonts/* "$MODDIR"/system/system_ext/fonts/
+            fi
+            sleep 1
+        }
+        in_f &
         e_spinner "${G}Installing $a font ${N}"
         echo -e " "
         echo -e "${G}Install success!${N}"
@@ -216,15 +211,13 @@ emoji_select() {
     fi
     if ! grep -i "^$a$" "$MODDIR"/lists/emojis-list.txt >/dev/null; then
         do_banner
-        echo -e "$div"
         echo -e "${R}ERROR: INVALID SELECTION${N}"
         sleep 0.5
         echo -e "${Y}Please try again${N}"
         sleep 3
         emoji_select
     fi
-	do_banner
-	echo -e "$div"
+    do_banner
     test_connection &
     e_spinner "${Y}Checking for internet access ${N}"
     if test $? -ne 0; then
@@ -244,7 +237,6 @@ emoji_select() {
 }
 update_lists() {
     do_banner
-    echo -e "$div"
     test_connection &
     e_spinner "${Y}Checking for internet access ${N}"
     if test $? -ne 0; then
@@ -285,14 +277,13 @@ detect_others() {
 }
 reboot() {
     do_banner
-    echo -e "$div"
     echo -en "${R}Are you sure you want to reboot? [y/N] ${N}"
     read -r a
-	if test "$a" == "y"; then
-    	setprop sys.powerctl reboot
-	else
-		menu_set
-	fi
+    if test "$a" == "y"; then
+        setprop sys.powerctl reboot
+    else
+        menu_set
+    fi
 }
 rever_st() {
     do_banner
@@ -310,7 +301,6 @@ rever_st() {
 menu_set() {
     while :; do
         do_banner
-        echo -e "$div"
         for i in curr-font curr-emoji; do
             if test ! -f $MODDIR/$i.txt; then
                 echo "stock" >$MODDIR/$i.txt

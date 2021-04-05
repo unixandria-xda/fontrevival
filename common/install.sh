@@ -2,21 +2,25 @@
 # shellcheck disable=SC2169
 # shellcheck disable=SC2121
 do_banner() {
-	echo -e " "
-	echo -e "${B}▒█▀▀▀ █▀▀█ █▀▀▄ ▀▀█▀▀ ${N}"
-	echo -e "${B}▒█▀▀▀ █░░█ █░░█ ░░█░░ ${N}"
-	echo -e "${B}▒█░░░ ▀▀▀▀ ▀░░▀ ░░▀░░ ${N}"
-	echo -e " "
-	echo -e "${B}▒█▀▄▀█ █▀▀█ █▀▀▄ █▀▀█ █▀▀▀ █▀▀ █▀▀█ ${N}"
-	echo -e "${B}▒█▒█▒█ █▄▄█ █░░█ █▄▄█ █░▀█ █▀▀ █▄▄▀ ${N}"
-	echo -e "${B}▒█░░▒█ ▀░░▀ ▀░░▀ ▀░░▀ ▀▀▀▀ ▀▀▀ ▀░▀▀${N}"
-	echo -e "An Androidacy Project"
-	echo -e "For more, visit androidacy.com"
+	ui_print "*************************************************"
+	ui_print "  _____              _                           "
+	ui_print " |  ___|___   _ __  | |_                         "
+	ui_print " | |_  / _ \ | '_ \ | __|                        "
+	ui_print " |  _|| (_) || | | || |_                         "
+	ui_print " |_|   \___/ |_| |_| \__|                        "
+	ui_print "  __  __                                         "
+	ui_print " |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ "
+	ui_print " | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|"
+	ui_print " | |  | || (_| || | | || (_| || (_| ||  __/| |   "
+	ui_print " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   "
+	ui_print "                               |___/             "
+	ui_print "*************************************************"
+	ui_print "An Androidacy project - androidacy.com"
+	ui_print "*************************************************"
 	sleep 2
 }
 do_banner
 ui_print "ⓘ Welcome to Font Manager!"
-ui_print "ⓘ Setting up enviroment..."
 test_connection() {
 	ui_print "ⓘ Testing internet connectivity"
 	(ping -4 -q -c 1 -W 2 www.androidacy.com >/dev/null 2>&1) && return 0 || return 1

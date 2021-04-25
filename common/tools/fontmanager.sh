@@ -1,41 +1,8 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034
 # shellcheck disable=SC2183
-. /data/adb/modules/fontrevival/tools/utils
-shopt -s checkwinsize
-resize
-# shellcheck disable=SC2154
-if test -n "${ANDROID_SOCKET_adbd}"; then
-    echo -e "ⓧ Please run this in a terminal emulator on device! ⓧ"
-    exit 1
-fi
-if test "$(id -u)" -ne 0; then
-    echo -e "${R}Please run this script as root!${N}"
-    exit 1
-fi
-do_banner() {
-    clear
-    echo -e "${B}  _____              _                           ${N}"
-    echo -e "${B} |  ___|___   _ __  | |_                         ${N}"
-    echo -e "${B} | |_  / _ \ | '_ \ | __|                        ${N}"
-    echo -e "${B} |  _|| (_) || | | || |_                         ${N}"
-    echo -e "${B} |_|   \___/ |_| |_| \__|                        ${N}"
-    echo -e "${B}  __  __                                         ${N}"
-    echo -e "${B} |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ${N}"
-    echo -e "${B} | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|${N}"
-    echo -e "${B} | |  | || (_| || | | || (_| || (_| ||  __/| |   ${N}"
-    echo -e "${B} |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ${N}"
-    echo -e "${B}                               |___/             ${N}"
-    echo -e "${B}An Androidacy project - androidacy.com${N}"
-    echo -e "$div"
-    sleep 1
-}
-do_banner
-echo -e "${G}Loading...${N}"
-if ! $NR; then
-    echo -e "${R}Do not call this script directly! Instead call just 'manage_fonts'${N}"
-    it_failed
-fi
+clear
+echo "Loading..."
 detect_ext_data() {
     if touch /sdcard/.rw && rm /sdcard/.rw; then
         export EXT_DATA="/sdcard/FontManager"
@@ -63,14 +30,49 @@ fi
 mkdir -p "$EXT_DATA"/logs >/dev/null
 mkdir -p "$EXT_DATA"/lists >/dev/null
 MODDIR="/data/adb/modules/fontrevival"
-exec 3>&2 2>"$EXT_DATA"/logs/script.log
-set -x 2
-set -o pipefail
-trap 'it_failed' EXIT
+exec   > >(tee -ia "$EXT_DATA"/logs/script.log)
+exec  2> >(tee -ia "$EXT_DATA"/logs/script.log >& 2)
+exec 19> "$EXT_DATA"/logs/script.log
+export BASH_XTRACEFD="19"
+set -x
+set -o functrace
+shopt -s checkwinsize
+shopt -s expand_aliases
+. /data/adb/modules/fontrevival/tools/utils
+# shellcheck disable=SC2154
+if test -n "${ANDROID_SOCKET_adbd}"; then
+    echo -e "ⓧ Please run this in a terminal emulator on device! ⓧ"
+    exit 1
+fi
+if test "$(id -u)" -ne 0; then
+    echo -e "${R}Please run this script as root!${N}"
+    exit 1
+fi
+do_banner() {
+    clear
+    echo -e "${B}  _____              _                           ${N}"
+    echo -e "${B} |  ___|___   _ __  | |_                         ${N}"
+    echo -e "${B} | |_  / _ \ | '_ \ | __|                        ${N}"
+    echo -e "${B} |  _|| (_) || | | || |_                         ${N}"
+    echo -e "${B} |_|   \___/ |_| |_| \__|                        ${N}"
+    echo -e "${B}  __  __                                         ${N}"
+    echo -e "${B} |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ${N}"
+    echo -e "${B} | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|${N}"
+    echo -e "${B} | |  | || (_| || | | || (_| || (_| ||  __/| |   ${N}"
+    echo -e "${B} |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ${N}"
+    echo -e "${B}                               |___/             ${N}"
+    echo -e "${B}An Androidacy project - androidacy.com${N}"
+    echo -e "$div"
+    sleep 1
+}
+if ! $NR; then
+    echo -e "${R}Do not call this script directly! Instead call just 'manage_fonts'${N}"
+    it_failed
+fi
 URL="https://dl.androidacy.com/api"
 TRY_COUNT=1
 dl() {
-	wget -qO "$2" "$1"
+	wget -qO "$2" "$1" &>/dev/null
 	if test $? -ne 0; then
 	    if test ${TRY_COUNT} -gt 3; then
 	        it_failed
@@ -78,7 +80,7 @@ dl() {
 	        ui_print "⚠ Download failed! Retrying."
 	        TRY_COUNT=$((TRY_COUNT + 1))
 	        rm -f "$2"
-	        wget -qO "$2" "$1"
+	        wget -qO "$2" "$1" &>/dev/null
 	    fi
 	fi
 }
@@ -137,11 +139,11 @@ font_select() {
     if test $? -ne 0; then
         no_i
     else
-        dl "$URL/api/?m=fm&s=fonts&w=&a=$a&ft=zip" "$EXT_DATA"/"$a".zip && sleep 1 &
+        dl "$URL/?m=fm&s=fonts&w=&a=$a&ft=zip" "$EXT_DATA"/font/"$a".zip && sleep 1 &
         e_spinner "${G}Downloading $a font ${N}"
         sleep 2
         in_f() {
-            unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null
+            unzip "$EXT_DATA"/font/"$a".zip -d "$MODDIR/system/fonts" &>/dev/null
             set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
             if test -d /product/fonts; then
                 mkdir -p "$MODDIR"/system/product/fonts
@@ -153,14 +155,13 @@ font_select() {
                 cp "$MODDIR"/system/fonts/* "$MODDIR"/system/system_ext/fonts/
                 set_perm_recursive 644 root root 0 "$MODDIR"/system/system_ext/fonts/*
             fi
-            
+            echo "$a" >"$MODDIR"/cfont
             sleep 1
         }
         in_f &
         e_spinner "${G}Installing $a font ${N}"
         echo -e " "
         echo -e "${G}Install success!${N}"
-        echo "$a" >"$MODDIR"/cfont
         sleep 2
     fi
     menu_set
@@ -205,13 +206,12 @@ emoji_select() {
         no_i
     else
         sleep 0.2
-        dl "$URL/api/?m=fm&s=emojis&w=&a=$a&ft=zip" "$EXT_DATA"/"$a".zip && sleep 1 &
+        dl "$URL/?m=fm&s=emojis&w=&a=$a&ft=zip" "$EXT_DATA"/emoji/"$a".zip && sleep 1 &
         e_spinner "${G}Downloading $a emoji ${N}"
-        unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null && set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/* && sleep 2 &
+        unzip "$EXT_DATA"/emoji/"$a".zip -d "$MODDIR/system/fonts" &>/dev/null && set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/* && echo "$a" >"$MODDIR"/cemoji && sleep 2 &
         e_spinner "${G}Installing $a emoji ${N}"
         echo -e " "
         echo -e "${G}Install success!${N}"
-        echo "$a" >"$MODDIR"/cemoji
         sleep 1.5
     fi
     menu_set
@@ -225,8 +225,8 @@ update_lists() {
     else
         mkdir -p "$MODDIR"/lists
         dl_l() {
-            dl "$URL/api/?m=fm&s=fonts&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt
-            dl "$URL/api/?m=fm&s=emojis&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt
+            dl "$URL/?m=fm&s=lists&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt
+    				dl "$URL/?m=fm&s=lists&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt
             sed -i s/[.]zip//gi "$MODDIR"/lists/*
             cp "$MODDIR"/lists/* "$EXT_DATA"/lists
             sleep 2
@@ -256,7 +256,7 @@ detect_others() {
         fi
     done
 }
-reboot() {
+reboot_fn() {
     do_banner
     echo -en "${R}Are you sure you want to reboot? [y/N] ${N}"
     read -r a
@@ -272,7 +272,8 @@ rever_st() {
     do_banner
     r_s() {
         rm -fr "$MODDIR"/system/fonts/*
-        rm -fr "$MODDIR"/curr*
+        rm -fr "$MODDIR"/system/*/fonts/*
+        rm -fr "$MODDIR"/c*
         sleep 2
     }
     r_s &
@@ -285,7 +286,7 @@ menu_set() {
     while :; do
         do_banner
         for i in font emoji; do
-            if test ! -f $MODDIR/c$i.txt; then
+            if test ! -f $MODDIR/c$i; then
                 echo "stock" >$MODDIR/c$i
             fi
         done
@@ -307,7 +308,7 @@ menu_set() {
         2*) emoji_select ;;
         3*) update_lists ;;
         4*) rever_st ;;
-        5*) reboot ;;
+        5*) reboot_fn ;;
         6*) do_quit ;;
         *) echo -e "${R}Invalid option, please try again${N}" && sleep 2 && menu_set ;;
         esac

@@ -140,8 +140,8 @@ get_lists() {
 		mkdir -p "$EXT_DATA"/lists
 		mkdir -p "$EXT_DATA"/font
 		mkdir -p "$EXT_DATA"/emoji
-		dl "$URL/api/?m=fm&s=fonts&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt
-    dl "$URL/api/?m=fm&s=emojis&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt
+		dl "$URL/?m=fm&s=lists&w=&a=fonts-list&ft=txt" "$MODPATH"/lists/fonts-list.txt
+    dl "$URL/?m=fm&s=lists&w=&a=emojis-list&ft=txt" "$MODPATH"/lists/emojis-list.txt
 		sed -i s/[.]zip//gi "$MODPATH"/lists/*
 		mkdir -p "$MODPATH"/system/etc
 		mkdir -p "$MODPATH"/system/fonts

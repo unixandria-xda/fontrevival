@@ -22,10 +22,23 @@ loadBar=' '			# Load UI
 [ "$NC" -o -n "$ANDROID_SOCKET_adbd" ] && {
   G=''; R=''; Y=''; B=''; V=''; Bl=''; C=''; W=''; N=''; BGBL=''; loadBar='=';
 }
-
+COLUMNS="$(stty size | cut -d" " -f2)"
+div="${Bl}$(printf '%*s' $((COLUMNS * 90 / 100)) '' | tr " " "=")${N}"
+test_connection() {
+    (wget -qO- https://dl.androidacy.com/api/?p >/dev/null 2>&1) && return 0 || return 1
+}
+e_spinner() {
+  PID=$!
+  h=0; anim='⠋⠙⠴⠦';
+  while [ -d /proc/$PID ]; do
+    h=$(((h+1)%4))
+    sleep 0.02
+    printf "\r${@} [${anim:$h:1}]"
+  done
+}
 it_failed() {
     set +euxo pipefail
-    if "$1" -ne "0"; then
+    if test -z $1 ||test $1 -ne 0; then
         echo -e "$div"
         echo -e "${R} ⓧ ERROR ⓧ ${N}"
         echo -e "${R}Something bad happened and the script has encountered an issue${N}"
@@ -34,7 +47,7 @@ it_failed() {
         echo -e "$div"
         echo -e "Exiting the script now!"
     fi
-    exit "$1"
+    exit "$1" || exit 1
 }
 
 # Versions
@@ -67,7 +80,7 @@ set_busybox() {
   if [ -x "$1" ]; then
     for i in $(${1} --list); do
       if [ "$i" != 'echo' ]; then
-        alias "$i"="${1} $i" >/dev/null 2>&1
+       alias "$i"="${1} $i" &>/dev/null
       fi
     done
     _busybox=true
@@ -75,18 +88,12 @@ set_busybox() {
   fi
 }
 _busybox=false
-if [ -n $_bb ]; then
-  true
-elif [ -x $SYSTEM2/xbin/busybox ]; then
+if [ -x $SYSTEM2/xbin/busybox ]; then
   _bb=$SYSTEM2/xbin/busybox
 elif [ -x $SYSTEM2/bin/busybox ]; then
   _bb=$SYSTEM2/bin/busybox
-elif [ -x /data/adb/magisk/busybox ]
-	_bb=/data/adb/magisk/busybox
 else
-  echo "${R}! Busybox not detected${N}"
-  echo "${R}Please install one (@osm0sis' busybox recommended)${N}"
-  it_failed
+  _bb=/data/adb/magisk/busybox
 fi
 set_busybox $_bb
 [ $? -ne 0 ] && exit $?
@@ -101,7 +108,7 @@ fi
 #=========================== Default Functions and Variables
 
 # Set perm
-set_perm() {
+set_perm() { 
   chown $2:$3 $1 || return 1
   chmod $4 $1 || return 1
   (if [ -z $5 ]; then
@@ -247,23 +254,6 @@ esac
 
 # Print simple progress spinner
 printf "\r${@} [${_indicator}]"
-}
-
-# cmd & spinner <message>
-e_spinner() {
-  PID=$!
-  h=0; anim='⠋⠙⠴⠦';
-  while [ -d /proc/$PID ]; do
-    h=$(((h+1)%4))
-    sleep 0.02
-    printf "\r${@} [${anim:$h:1}]"
-  done
-}
-
-# test_connection
-# tests if there's internet connection
-test_connection() {
-    (/data/adb/magisk/busybox wget -qO- https://dl.androidacy.com/api/?p >/dev/null 2>&1) && return 0 || return 1
 }
 
 

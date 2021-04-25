@@ -1,7 +1,7 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034
 # shellcheck disable=SC2183
-. "$MODPATH"/tools/utils
+. /data/adb/modules/fontrevival/tools/utils
 shopt -s checkwinsize
 resize
 # shellcheck disable=SC2154

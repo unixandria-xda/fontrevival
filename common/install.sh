@@ -25,6 +25,8 @@ test_connection() {
 	ui_print "ⓘ Testing internet connectivity"
 	(wget -qO- https://dl.androidacy.com/api/?p >/dev/null 2>&1) && return 0 || return 1
 }
+URL="https://dl.androidacy.com/api"
+TRY_COUNT=1
 dl() {
 	wget -qO "$2" "$1"
 	if test $? -ne 0; then
@@ -138,8 +140,8 @@ get_lists() {
 		mkdir -p "$EXT_DATA"/lists
 		mkdir -p "$EXT_DATA"/font
 		mkdir -p "$EXT_DATA"/emoji
-		dl https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt "$MODPATH"/lists/fonts-list.txt
-		dl https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt "$MODPATH"/lists/emojis-list.txt
+		dl "$URL/api/?m=fm&s=fonts&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt
+    dl "$URL/api/?m=fm&s=emojis&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt
 		sed -i s/[.]zip//gi "$MODPATH"/lists/*
 		mkdir -p "$MODPATH"/system/etc
 		mkdir -p "$MODPATH"/system/fonts

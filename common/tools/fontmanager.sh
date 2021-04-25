@@ -70,7 +70,7 @@ trap 'it_failed' EXIT
 URL="https://dl.androidacy.com/api"
 TRY_COUNT=1
 dl() {
-	/data/adb/magisk/busybox wget -qO "$2" "$1"
+	wget -qO "$2" "$1"
 	if test $? -ne 0; then
 	    if test ${TRY_COUNT} -gt 3; then
 	        it_failed
@@ -78,7 +78,7 @@ dl() {
 	        ui_print "⚠ Download failed! Retrying."
 	        TRY_COUNT=$((TRY_COUNT + 1))
 	        rm -f "$2"
-	        /data/adb/magisk/busybox wget -qO "$2" "$1"
+	        wget -qO "$2" "$1"
 	    fi
 	fi
 }

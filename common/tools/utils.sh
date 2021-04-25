@@ -40,7 +40,7 @@ it_failed() {
 # Versions
 MODUTILVER=v2.6.1
 MODUTILVCODE=261
-MODDIR=/data/adb/modules/fontifier
+MODDIR=/data/adb/modules/fontrevival
 # Check A/B slot
 if [ -d /system_root ]; then
   isABDevice=true

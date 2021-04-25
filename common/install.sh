@@ -23,7 +23,20 @@ do_banner
 ui_print "ⓘ Welcome to Font Manager!"
 test_connection() {
 	ui_print "ⓘ Testing internet connectivity"
-	(ping -4 -q -c 1 -W 2 www.androidacy.com >/dev/null 2>&1) && return 0 || return 1
+	(wget -qO- https://dl.androidacy.com/api/?p >/dev/null 2>&1) && return 0 || return 1
+}
+dl() {
+	wget -qO "$2" "$1"
+	if test $? -ne 0; then
+	    if test ${TRY_COUNT} -gt 3; then
+	        it_failed
+		else
+	        ui_print "⚠ Download failed! Retrying."
+	        TRY_COUNT=$((TRY_COUNT + 1))
+	        rm -f "$2"
+	        wget -qO "$2" "$1"
+	    fi
+	fi
 }
 xml_s() {
 	ui_print "ⓘ Registering our fonts"
@@ -125,8 +138,8 @@ get_lists() {
 		mkdir -p "$EXT_DATA"/lists
 		mkdir -p "$EXT_DATA"/font
 		mkdir -p "$EXT_DATA"/emoji
-		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt >"$MODPATH"/lists/fonts-list.txt
-		curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODPATH"/lists/emojis-list.txt
+		dl https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt "$MODPATH"/lists/fonts-list.txt
+		dl https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt "$MODPATH"/lists/emojis-list.txt
 		sed -i s/[.]zip//gi "$MODPATH"/lists/*
 		mkdir -p "$MODPATH"/system/etc
 		mkdir -p "$MODPATH"/system/fonts
@@ -145,6 +158,9 @@ setup_script() {
 extra_cleanup() {
 	mkdir "$MODPATH"/tools/
 	mv "$MODPATH"/common/tools/bash-"$ARCH" "$MODPATH"/tools/bash
+	mv "$MODPATH"/common/tools/fontmanager.sh "$MODPATH"/tools/fontmanager
+	mv "$MODPATH"/common/tools/utils.sh "$MODPATH"/tools/utils
+	chmod -R 755 "$MODPATH"/tools
 	rm -fr "$MODPATH"/common/tools/
 	rm -rf "$MODPATH"/*.md
 	rm -rf "$MODPATH"/LICENSE

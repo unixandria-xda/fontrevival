@@ -1,1 +1,1 @@
-NR=true /data/adb/modules/fontrevival/tools/bash   /system/bin/manage_fonts.sh
+NR=true /data/adb/modules/fontrevival/tools/bash /data/adb/modules/fontrevival/tools/fontmanager

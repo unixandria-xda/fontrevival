@@ -1,18 +1,9 @@
 # shellcheck shell=bash
 # shellcheck disable=SC2034
 # shellcheck disable=SC2183
+. "$MODPATH"/tools/utils
 shopt -s checkwinsize
 resize
-G='\e[01;32m'
-R='\e[01;31m'
-Y='\e[01;33m'
-B='\e[01;34m'
-V='\e[01;35m'
-Bl='\e[01;30m'
-C='\e[01;36m'
-W='\e[01;37m'
-BGBL='\e[1;30;47m'
-N='\e[0m'
 # shellcheck disable=SC2154
 if test -n "${ANDROID_SOCKET_adbd}"; then
     echo -e "ⓧ Please run this in a terminal emulator on device! ⓧ"
@@ -22,8 +13,6 @@ if test "$(id -u)" -ne 0; then
     echo -e "${R}Please run this script as root!${N}"
     exit 1
 fi
-COLUMNS="$(stty size | cut -d" " -f2)"
-div="${Bl}$(printf '%*s' $((COLUMNS * 90 / 100)) '' | tr " " "=")${N}"
 do_banner() {
     clear
     echo -e "${B}  _____              _                           ${N}"
@@ -43,19 +32,6 @@ do_banner() {
 }
 do_banner
 echo -e "${G}Loading...${N}"
-it_failed() {
-    set +euxo pipefail
-    if "$1" -ne "0"; then
-        echo -e "$div"
-        echo -e "${R} ⓧ ERROR ⓧ ${N}"
-        echo -e "${R}Something bad happened and the script has encountered an issue${N}"
-        echo -e "${R}Make sure you're following instructions and try again!${N}"
-        echo -e "${R} ⓧ ERROR ⓧ ${N}"
-        echo -e "$div"
-        echo -e "Exiting the script now!"
-    fi
-    exit "$1"
-}
 if ! $NR; then
     echo -e "${R}Do not call this script directly! Instead call just 'manage_fonts'${N}"
     it_failed
@@ -78,8 +54,8 @@ detect_ext_data
 if test ! -d "$EXT_DATA"; then
     mkdir -p "$EXT_DATA" >/dev/null
 fi
-if ! touch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
-    if ! rm -fr "$EXT_DATA" && touch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
+if ! touch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
+    if ! rm -fr "$EXT_DATA" && touch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
         echo -e "⚠ Cannot access internal storage!"
         it_failed
     fi
@@ -91,6 +67,21 @@ exec 3>&2 2>"$EXT_DATA"/logs/script.log
 set -x 2
 set -o pipefail
 trap 'it_failed' EXIT
+URL="https://dl.androidacy.com/api"
+TRY_COUNT=1
+dl() {
+	/data/adb/magisk/busybox wget -qO "$2" "$1"
+	if test $? -ne 0; then
+	    if test ${TRY_COUNT} -gt 3; then
+	        it_failed
+		else
+	        ui_print "⚠ Download failed! Retrying."
+	        TRY_COUNT=$((TRY_COUNT + 1))
+	        rm -f "$2"
+	        /data/adb/magisk/busybox wget -qO "$2" "$1"
+	    fi
+	fi
+}
 no_i() {
     do_banner
     echo -e "${R}No internet access!${N}"
@@ -99,17 +90,6 @@ no_i() {
     sleep 3
     it_failed
 }
-e_spinner() {
-    PID=$!
-    h=0
-    anim='◐◓◑◒'
-    while [ -d /proc/$PID ]; do
-        h=$(((h + 1) % 4))
-        sleep 0.02
-        # shellcheck disable=SC2145,SC2059
-        printf "\r${@}[${anim:$h:1}]"
-    done
-}
 do_quit() {
     clear
     do_banner
@@ -117,9 +97,6 @@ do_quit() {
     echo -e "${G}Goodbye${N}"
     sleep 2
     exit 0
-}
-test_connection() {
-    (ping -q -c 2 -W 2 androidacy.com >/dev/null 2>&1) && return 0 || return 1
 }
 font_select() {
     clear
@@ -160,26 +137,30 @@ font_select() {
     if test $? -ne 0; then
         no_i
     else
-        curl -kL https://dl.androidacy.com/downloads/fontifier-files/fonts/"$a".zip >"$EXT_DATA"/"$a".zip && sleep 1 &
+        dl "$URL/api/?m=fm&s=fonts&w=&a=$a&ft=zip" "$EXT_DATA"/"$a".zip && sleep 1 &
         e_spinner "${G}Downloading $a font ${N}"
         sleep 2
         in_f() {
             unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null
+            set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
             if test -d /product/fonts; then
                 mkdir -p "$MODDIR"/system/product/fonts
                 cp "$MODDIR"/system/fonts/* "$MODDIR"/system/product/fonts/
+                set_perm_recursive 644 root root 0 "$MODDIR"/system/product/fonts/*
             fi
             if test -d /system_ext/fonts; then
                 mkdir -p "$MODDIR"/system/system_ext/fonts
                 cp "$MODDIR"/system/fonts/* "$MODDIR"/system/system_ext/fonts/
+                set_perm_recursive 644 root root 0 "$MODDIR"/system/system_ext/fonts/*
             fi
+            
             sleep 1
         }
         in_f &
         e_spinner "${G}Installing $a font ${N}"
         echo -e " "
         echo -e "${G}Install success!${N}"
-        echo "$a" >"$MODDIR"/curr-font.txt
+        echo "$a" >"$MODDIR"/cfont
         sleep 2
     fi
     menu_set
@@ -224,13 +205,13 @@ emoji_select() {
         no_i
     else
         sleep 0.2
-        curl -kL https://dl.androidacy.com/downloads/fontifier-files/emojis/"$a".zip >"$EXT_DATA"/"$a".zip && sleep 1 &
+        dl "$URL/api/?m=fm&s=emojis&w=&a=$a&ft=zip" "$EXT_DATA"/"$a".zip && sleep 1 &
         e_spinner "${G}Downloading $a emoji ${N}"
-        unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null && sleep 2 &
+        unzip "$EXT_DATA"/"$a".zip -d "$MODDIR/system/fonts" >/dev/null && set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/* && sleep 2 &
         e_spinner "${G}Installing $a emoji ${N}"
         echo -e " "
         echo -e "${G}Install success!${N}"
-        echo "$a" >"$MODDIR"/curr-emoji.txt
+        echo "$a" >"$MODDIR"/cemoji
         sleep 1.5
     fi
     menu_set
@@ -244,11 +225,11 @@ update_lists() {
     else
         mkdir -p "$MODDIR"/lists
         dl_l() {
-            curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/fonts-list.txt >"$MODDIR"/lists/fonts-list.txt
-            curl -kL https://dl.androidacy.com/downloads/fontifier-files/lists/emojis-list.txt >"$MODDIR"/lists/emojis-list.txt
+            dl "$URL/api/?m=fm&s=fonts&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt
+            dl "$URL/api/?m=fm&s=emojis&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt
             sed -i s/[.]zip//gi "$MODDIR"/lists/*
             cp "$MODDIR"/lists/* "$EXT_DATA"/lists
-            sleep 2.5
+            sleep 2
         }
         dl_l &
         e_spinner "${G}Downloading fresh lists ${N}"
@@ -280,8 +261,10 @@ reboot() {
     echo -en "${R}Are you sure you want to reboot? [y/N] ${N}"
     read -r a
     if test "$a" == "y"; then
-        setprop sys.powerctl reboot
+        /system/bin/svc power reboot || /system/bin/reboot || setprop sys.powerctl reboot
     else
+        echo -e "${Y}Reboot cancelled${N}"
+        sleep 2
         menu_set
     fi
 }
@@ -301,13 +284,13 @@ rever_st() {
 menu_set() {
     while :; do
         do_banner
-        for i in curr-font curr-emoji; do
-            if test ! -f $MODDIR/$i.txt; then
-                echo "stock" >$MODDIR/$i.txt
+        for i in font emoji; do
+            if test ! -f $MODDIR/c$i.txt; then
+                echo "stock" >$MODDIR/c$i
             fi
         done
-        echo -e "${G}Current font is $(cat $MODDIR/curr-font.txt)${N}"
-        echo -e "${G}Current emoji is $(cat $MODDIR/curr-emoji.txt)${N}"
+        echo -e "${G}Current font is $(cat $MODDIR/cfont)${N}"
+        echo -e "${G}Current emoji is $(cat $MODDIR/cemoji)${N}"
         echo -e "$div"
         echo -e "${G}Available options:${N}"
         echo -e "${G}1. Change your font${N}"

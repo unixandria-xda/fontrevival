@@ -21,25 +21,7 @@ do_banner() {
 }
 do_banner
 ui_print "ⓘ Welcome to Font Manager!"
-test_connection() {
-	ui_print "ⓘ Testing internet connectivity"
-	(wget -qO- https://dl.androidacy.com/api/?p >/dev/null 2>&1) && return 0 || return 1
-}
-URL="https://dl.androidacy.com/api"
 TRY_COUNT=1
-dl() {
-	wget -qO "$2" "$1"
-	if test $? -ne 0; then
-	    if test ${TRY_COUNT} -gt 3; then
-	        it_failed
-		else
-	        ui_print "⚠ Download failed! Retrying."
-	        TRY_COUNT=$((TRY_COUNT + 1))
-	        rm -f "$2"
-	        wget -qO "$2" "$1"
-	    fi
-	fi
-}
 xml_s() {
 	ui_print "ⓘ Registering our fonts"
 	SXML="$MODPATH"/system/etc/fonts.xml
@@ -140,8 +122,8 @@ get_lists() {
 		mkdir -p "$EXT_DATA"/lists
 		mkdir -p "$EXT_DATA"/font
 		mkdir -p "$EXT_DATA"/emoji
-		dl "$URL/?m=fm&s=lists&w=&a=fonts-list&ft=txt" "$MODPATH"/lists/fonts-list.txt
-    dl "$URL/?m=fm&s=lists&w=&a=emojis-list&ft=txt" "$MODPATH"/lists/emojis-list.txt
+		dl "&s=lists&w=&a=fonts-list&ft=txt" "$MODPATH/lists/fonts-list.txt" "download"
+        dl "&s=lists&w=&a=emojis-list&ft=txt" "$MODPATH/lists/emojis-list.txt" "download"
 		sed -i s/[.]zip//gi "$MODPATH"/lists/*
 		mkdir -p "$MODPATH"/system/etc
 		mkdir -p "$MODPATH"/system/fonts
@@ -159,13 +141,13 @@ setup_script() {
 }
 extra_cleanup() {
 	mkdir "$MODPATH"/tools/
-	mv "$MODPATH"/common/tools/bash-"$ARCH" "$MODPATH"/tools/bash
 	mv "$MODPATH"/common/tools/fontmanager.sh "$MODPATH"/tools/fontmanager
 	mv "$MODPATH"/common/tools/utils.sh "$MODPATH"/tools/utils
-	chmod -R 755 "$MODPATH"/tools
-	rm -fr "$MODPATH"/common/tools/
+	chmod -R a+x "$MODPATH"/tools
+	rm -fr "$MODPATH"/common/
 	rm -rf "$MODPATH"/*.md
 	rm -rf "$MODPATH"/LICENSE
+	test_connection && dl "&i=1" "/dev/null" "ping"
 }
 get_lists
 copy_lists
@@ -179,4 +161,4 @@ extra_cleanup
 	echo "Support and contact: https://www.anroidacy.com/contact/"
 } >"$EXT_DATA"/README.txt
 ui_print "⚠ Please make sure not to have any other font changing modules installed ⚠"
-ui_print "⚠ Please remove any such module, as it conflicts with this module ⚠"
+ui_print "⚠ Please remove any such module, as it conflicts with this one ⚠"

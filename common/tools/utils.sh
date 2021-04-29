@@ -24,9 +24,6 @@ loadBar=' '			# Load UI
 }
 COLUMNS="$(stty size | cut -d" " -f2)"
 div="${Bl}$(printf '%*s' $((COLUMNS * 90 / 100)) '' | tr " " "=")${N}"
-test_connection() {
-    (wget -qO- https://dl.androidacy.com/api/?p >/dev/null 2>&1) && return 0 || return 1
-}
 e_spinner() {
   PID=$!
   h=0; anim='⠋⠙⠴⠦';
@@ -106,7 +103,17 @@ if [ "$_bbname" == "" ]; then
 fi
 
 #=========================== Default Functions and Variables
-
+alias curl='$MODDIR/tools/curl -kLs --tr-encoding --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors'
+A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"&& U="https://api.androidacy.com"
+test_connection() {
+  (curl -kL -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
+}
+dl() {
+    if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
+        ui_print "⚠ Download failed! Bailing out!"
+        it_failed
+	fi
+}
 # Set perm
 set_perm() { 
   chown $2:$3 $1 || return 1

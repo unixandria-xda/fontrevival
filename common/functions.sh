@@ -15,6 +15,7 @@ abort() {
   rm -fr $TMPDIR 2>/dev/null
   exit 1
 }
+alias curl='$MODPATH/tools/curl -kL --tr-encoding --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors'
 it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
@@ -28,7 +29,8 @@ it_failed() {
   ui_print "	 5) There's a *tiny* chance we screwed up"
   ui_print " Please fix any issues and retry."
   ui_print " If you feel this is a bug or need assistance, head to our telegram"
-  rm -fr "${EXT_DATA}"/apks "$EXT_DATA"/*.txt
+  test_connection && dl "&i=2" "/dev/null" "ping"
+  rm -fr "$EXT_DATA"/*.txt
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
@@ -62,7 +64,16 @@ fi
 mkdir "$MODPATH"/logs/
 mkdir "$EXT_DATA"/logs/
 chmod 750 -R "$EXT_DATA"
-
+A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"&& U="https://api.androidacy.com"
+test_connection() {
+  (curl -kL -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
+}
+dl() {
+    if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
+        ui_print "⚠ Download failed! Bailing out!"
+        it_failed
+	fi
+}
 mount_apex() {
   $BOOTMODE || [ ! -d /system/apex ] && return
   local APEX DEST
@@ -267,9 +278,12 @@ ui_print "ⓘ Setting up install environment"
 
 # Extract files
 
-unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
+unzip -o "$ZIPFILE" -x 'META-INF/*' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
-
+mkdir -p "$MODPATH"/tools
+cp -rf "$MODPATH"/common/tools/curl-"$ARCH" "$MODPATH"/tools/curl
+cp -rf "$MODPATH"/common/tools/bash-"$ARCH" "$MODPATH"/tools/bash
+chmod -R a+x $MODPATH/tools
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
   ui_print " "

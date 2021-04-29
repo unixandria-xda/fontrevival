@@ -69,21 +69,7 @@ if ! $NR; then
     echo -e "${R}Do not call this script directly! Instead call just 'manage_fonts'${N}"
     it_failed
 fi
-URL="https://dl.androidacy.com/api"
 TRY_COUNT=1
-dl() {
-	wget -qO "$2" "$1" &>/dev/null
-	if test $? -ne 0; then
-	    if test ${TRY_COUNT} -gt 3; then
-	        it_failed
-		else
-	        ui_print "⚠ Download failed! Retrying."
-	        TRY_COUNT=$((TRY_COUNT + 1))
-	        rm -f "$2"
-	        wget -qO "$2" "$1" &>/dev/null
-	    fi
-	fi
-}
 no_i() {
     do_banner
     echo -e "${R}No internet access!${N}"
@@ -139,7 +125,7 @@ font_select() {
     if test $? -ne 0; then
         no_i
     else
-        dl "$URL/?m=fm&s=fonts&w=&a=$a&ft=zip" "$EXT_DATA"/font/"$a".zip && sleep 1 &
+        dl "&s=fonts&w=&a=$a&ft=zip" "$EXT_DATA/font/$a.zip" "download" && sleep 1 &
         e_spinner "${G}Downloading $a font ${N}"
         sleep 2
         in_f() {
@@ -206,7 +192,7 @@ emoji_select() {
         no_i
     else
         sleep 0.2
-        dl "$URL/?m=fm&s=emojis&w=&a=$a&ft=zip" "$EXT_DATA"/emoji/"$a".zip && sleep 1 &
+        dl "&s=emojis&w=&a=$a&ft=zip" "$EXT_DATA/emoji/$a.zip" "download" && sleep 1 &
         e_spinner "${G}Downloading $a emoji ${N}"
         unzip "$EXT_DATA"/emoji/"$a".zip -d "$MODDIR/system/fonts" &>/dev/null && set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/* && echo "$a" >"$MODDIR"/cemoji && sleep 2 &
         e_spinner "${G}Installing $a emoji ${N}"
@@ -225,8 +211,8 @@ update_lists() {
     else
         mkdir -p "$MODDIR"/lists
         dl_l() {
-            dl "$URL/?m=fm&s=lists&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt
-    				dl "$URL/?m=fm&s=lists&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt
+            dl "&s=lists&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt "download"
+    		dl "&s=lists&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt "download"
             sed -i s/[.]zip//gi "$MODDIR"/lists/*
             cp "$MODDIR"/lists/* "$EXT_DATA"/lists
             sleep 2

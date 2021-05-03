@@ -29,7 +29,7 @@ e_spinner() {
   h=0; anim='⠋⠙⠴⠦';
   while [ -d /proc/$PID ]; do
     h=$(((h+1)%4))
-    sleep 0.02
+    sleep 0.05
     printf "\r${@} [${anim:$h:1}]"
   done
 }
@@ -106,7 +106,7 @@ fi
 alias curl='$MODDIR/tools/curl -kLs --tr-encoding --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors'
 A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"&& U="https://api.androidacy.com"
 test_connection() {
-  (curl -kL -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
+  (curl -kL -q -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
 }
 dl() {
     if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then

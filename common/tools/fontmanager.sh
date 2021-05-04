@@ -1,6 +1,6 @@
+#!/bin/bash
 # shellcheck shell=bash
-# shellcheck disable=SC2034
-# shellcheck disable=SC2183
+# shellcheck disable=SC2034,SC2183,SC2154,SC1091
 clear
 echo "Loading..."
 detect_ext_data() {
@@ -30,9 +30,9 @@ fi
 mkdir -p "$EXT_DATA"/logs >/dev/null
 mkdir -p "$EXT_DATA"/lists >/dev/null
 MODDIR="/data/adb/modules/fontrevival"
-exec   > >(tee -ia "$EXT_DATA"/logs/script.log)
-exec  2> >(tee -ia "$EXT_DATA"/logs/script.log >& 2)
-exec 19> "$EXT_DATA"/logs/script.log
+exec > >(tee -ia "$EXT_DATA"/logs/script.log)
+exec 2> >(tee -ia "$EXT_DATA"/logs/script.log >&2)
+exec 19>"$EXT_DATA"/logs/script.log
 export BASH_XTRACEFD="19"
 set -x
 set -o functrace
@@ -147,7 +147,7 @@ font_select() {
         in_f &
         e_spinner "${G}Installing $a font ${N}"
         echo -e " "
-        echo -e "${G}Install success!${N}"
+        echo -e "${G}Install success! Returning to menu${N}"
         sleep 2
     fi
     menu_set
@@ -197,8 +197,8 @@ emoji_select() {
         unzip "$EXT_DATA"/emoji/"$a".zip -d "$MODDIR/system/fonts" &>/dev/null && set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/* && echo "$a" >"$MODDIR"/cemoji && sleep 2 &
         e_spinner "${G}Installing $a emoji ${N}"
         echo -e " "
-        echo -e "${G}Install success!${N}"
-        sleep 1.5
+        echo -e "${G}Install success! Returning to menu${N}"
+        sleep 1.65
     fi
     menu_set
 }
@@ -212,10 +212,10 @@ update_lists() {
         mkdir -p "$MODDIR"/lists
         dl_l() {
             dl "&s=lists&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt "download"
-    		dl "&s=lists&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt "download"
+            dl "&s=lists&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt "download"
             sed -i s/[.]zip//gi "$MODDIR"/lists/*
             cp "$MODDIR"/lists/* "$EXT_DATA"/lists
-            sleep 2
+            sleep 1.75
         }
         dl_l &
         e_spinner "${G}Downloading fresh lists ${N}"

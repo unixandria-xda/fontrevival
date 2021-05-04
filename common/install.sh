@@ -21,7 +21,6 @@ do_banner() {
 }
 do_banner
 ui_print "ⓘ Welcome to Font Manager!"
-TRY_COUNT=1
 xml_s() {
 	ui_print "ⓘ Registering our fonts"
 	SXML="$MODPATH"/system/etc/fonts.xml

@@ -1,5 +1,13 @@
 # Changelog
 
+## v4.0.2
+
+- Much improve the UX and UI of the module
+- Improve update lists option
+- Switch to AndroidacyAPI for backend
+- Add new emojis and fonts
+- Improve reboot option
+- Broaden compatiblity
 ## v3.0.2
 
 - Fix known bugs with 3.0.1

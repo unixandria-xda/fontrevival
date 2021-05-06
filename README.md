@@ -45,7 +45,7 @@ All the available fonts are listed in the module, there's over 200 fonts and sev
 - Website: [Click me](https://www.androidacy.com)
 - Get support: [Find out how](https://www.androidacy.com/contact/)
 - Upstream repo: [GitHub](https://github.com/androidacy/FontManager/)
-- ~~Magisk repo: coming soon(tm)~~ John Wu doesn't seem to be processing submissions anymore.
+- Magisk repo: [GitHub](https://github.com/Magisk-Modules-Repo/fontrevival)
 - By using this module, you agree to our [Terms of Service](https://www.androidacy.com/terms/)
 
 <sub><sub>**NOTE:** This module is neither developed by, endorsed by, nor developed by in any way by John Fawkes, the creator of Fontchanger!</sub></sup>

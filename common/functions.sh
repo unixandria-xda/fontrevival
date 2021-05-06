@@ -47,8 +47,8 @@ detect_ext_data
 if test ! -d "$EXT_DATA"; then
   mkdir "$EXT_DATA"
 fi
-if ! mktouch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
-  if ! rm -fr "$EXT_DATA" && mktouch "EXT_DATA"/.rw && rm -fr "EXT_DATA"/.rw; then
+if ! mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
+  if ! rm -fr "$EXT_DATA" && mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
     ui_print "⚠ Cannot access internal storage!"
     it_failed
   fi

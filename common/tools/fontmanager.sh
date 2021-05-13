@@ -129,7 +129,7 @@ font_select() {
         e_spinner "${G}Downloading $a font ${N}"
         sleep 2
         in_f() {
-            unzip "$EXT_DATA"/font/"$a".zip -d "$MODDIR/system/fonts" &>/dev/null
+            unzip -o "$EXT_DATA"/font/"$a".zip -d "$MODDIR/system/fonts" &>/dev/null
             set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
             if test -d /product/fonts; then
                 mkdir -p "$MODDIR"/system/product/fonts
@@ -194,7 +194,7 @@ emoji_select() {
         sleep 0.2
         dl "&s=emojis&w=&a=$a&ft=zip" "$EXT_DATA/emoji/$a.zip" "download" && sleep 1 &
         e_spinner "${G}Downloading $a emoji ${N}"
-        unzip "$EXT_DATA"/emoji/"$a".zip -d "$MODDIR/system/fonts" &>/dev/null && set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/* && echo "$a" >"$MODDIR"/cemoji && sleep 2 &
+        unzip -o "$EXT_DATA"/emoji/"$a".zip -d "$MODDIR/system/fonts" &>/dev/null && set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/* && echo "$a" >"$MODDIR"/cemoji && sleep 2 &
         e_spinner "${G}Installing $a emoji ${N}"
         echo -e " "
         echo -e "${G}Install success! Returning to menu${N}"

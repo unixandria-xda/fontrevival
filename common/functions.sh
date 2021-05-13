@@ -1,13 +1,27 @@
-# shellcheck shell=dash
-# shellcheck disable=SC2155,SC2034,SC1090,SC2086,SC2169,SC2046,SC2044,SC2166,SC2061,SC3014,SC3010,SC1091
-abort() {
-  ui_print "$1"
-  rm -fr $MODPATH 2>/dev/null
-  $BOOTMODE || recovery_cleanup
-  rm -fr $TMPDIR 2>/dev/null
-  exit 1
+# shellcheck shell=ash
+# shellcheck disable=SC2061,SC3010,SC2166,SC2044,SC2046,SC2086,SC1090,SC2034,SC2155,SC1091
+#Extract files
+do_banner() {
+	ui_print "*************************************************"
+	ui_print "  _____              _                           "
+	ui_print " |  ___|___   _ __  | |_                         "
+	ui_print " | |_  / _ \ | '_ \ | __|                        "
+	ui_print " |  _|| (_) || | | || |_                         "
+	ui_print " |_|   \___/ |_| |_| \__|                        "
+	ui_print "  __  __                                         "
+	ui_print " |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ "
+	ui_print " | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|"
+	ui_print " | |  | || (_| || | | || (_| || (_| ||  __/| |   "
+	ui_print " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   "
+	ui_print "                               |___/             "
+	ui_print "*************************************************"
+	ui_print "An Androidacy project - androidacy.com"
+	ui_print "*************************************************"
+	sleep 2
 }
-alias curl='$MODPATH/tools/curl -kLs --tr-encoding --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors'
+do_banner
+unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
+[ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 it_failed() {
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
@@ -21,14 +35,40 @@ it_failed() {
   ui_print "	 5) There's a *tiny* chance we screwed up"
   ui_print " Please fix any issues and retry."
   ui_print " If you feel this is a bug or need assistance, head to our telegram"
-  test_connection && dl "&i=2" "/dev/null" "ping"
-  rm -fr "$EXT_DATA"/*.txt
+  ui_print " All files besides logs are assumed to be corrupt, and have been removed."
+  rm -fr "$EXT_DATA"/apks "$EXT_DATA"/version.txt
   ui_print " "
   ui_print "⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠ ⚠"
   ui_print " "
-  abort
+  $INTERNET && curl -s -d "$P&i=2" "$U"/ping >/dev/null
+  exit 1
 }
-
+set_tls() {
+  mkdir "$TMPDIR"/path
+  unzip "$MODPATH"/common/tools/tools.zip -d "$TMPDIR"/path >/dev/null
+}
+set_tls
+alias aapt='$TMPDIR/path/$ARCH/aapt'
+alias sign='$TMPDIR/path/zipsigner'
+chmod -R 755 "$MODPATH/common/tools/"
+alias curl='$MODPATH/common/tools/curl-$ARCH -kL --compressed --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors --dns-servers '1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4''
+chmod -R a+x "$TMPDIR"/path
+dl() {
+  if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
+    ui_print "⚠ Download failed! Bailing out!"
+    it_failed
+  fi
+}
+get_v() {
+  curl -d "$P&s=$DIR" -X POST -kL $U/version
+}
+abort() {
+  ui_print "$1"
+  rm -fr $MODPATH 2>/dev/null
+  $BOOTMODE || recovery_cleanup
+  rm -fr $TMPDIR 2>/dev/null
+  it_failed
+}
 detect_ext_data() {
   if touch /sdcard/.rw && rm /sdcard/.rw; then
     export EXT_DATA="/sdcard/FontManager"
@@ -41,38 +81,33 @@ detect_ext_data() {
     ui_print "⚠ Possible internal storage access issues! Please make sure data is mounted and decrypted."
     ui_print "⚠ Trying to proceed anyway..."
   fi
+  if test ! -d "$EXT_DATA"; then
+    mkdir "$EXT_DATA"
+  fi
+  if ! mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
+    if ! rm -fr "$EXT_DATA" && mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
+      ui_print "⚠ Cannot access internal storage!"
+      it_failed
+    fi
+  fi
+  mkdir "$MODPATH"/logs/
+  mkdir -p "$EXT_DATA"/apks/
+  mkdir -p "$EXT_DATA"/logs/
+  chmod 750 -R "$EXT_DATA"
 }
-
 detect_ext_data
-if test ! -d "$EXT_DATA"; then
-  mkdir "$EXT_DATA"
-fi
-if ! mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
-  if ! rm -fr "$EXT_DATA" && mktouch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
-    ui_print "⚠ Cannot access internal storage!"
-    it_failed
-  fi
-fi
-mkdir "$MODPATH"/logs/
-mkdir "$EXT_DATA"/logs/
-chmod 750 -R "$EXT_DATA"
-A=$(resetprop ro.build.version.release) && D=$(resetprop ro.product.name || resetprop ro.product.model) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
+A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release) && D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
 test_connection() {
-  (curl -kL -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
+  (curl -s -d "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
 }
-dl() {
-  if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
-    ui_print "⚠ Download failed! Bailing out!"
-    it_failed
-  fi
-}
+test_connection && INTERNET=true
 mount_apex() {
   $BOOTMODE || [ ! -d /system/apex ] && return
   local APEX DEST
   setup_mntpoint /apex
   for APEX in /system/apex/*; do
     DEST=/apex/$(basename $APEX .apex)
-    [ "$DEST" == /apex/com.android.runtime.release ] && DEST=/apex/com.android.runtime
+    [ "$DEST" = /apex/com.android.runtime.release ] && DEST=/apex/com.android.runtime
     mkdir -p $DEST 2>/dev/null
     if [ -f $APEX ]; then
       # APEX APKs, extract and loop mount
@@ -143,7 +178,7 @@ device_check() {
   for i in /system /vendor /odm /product; do
     if [ -f $i/build.prop ]; then
       for j in "ro.product.$type" "ro.build.$type" "ro.product.vendor.$type" "ro.vendor.product.$type"; do
-        [ "$(sed -n "s/^$j=//p" $i/build.prop 2>/dev/null | head -n 1 | tr '[:upper:]' '[:lower:]')" == "$prop" ] && return 0
+        [ "$(sed -n "s/^$j=//p" $i/build.prop 2>/dev/null | head -n 1 | tr '[:upper:]' '[:lower:]')" = "$prop" ] && return 0
       done
     fi
   done
@@ -178,7 +213,7 @@ cp_ch() {
   esac
   for OFILE in ${OFILES}; do
     if $FOL; then
-      if [ "$(basename $SRC)" == "$(basename $DEST)" ]; then
+      if [ "$(basename $SRC)" = "$(basename $DEST)" ]; then
         local FILE=$(echo $OFILE | sed "s|$SRC|$DEST|")
       else
         local FILE=$(echo $OFILE | sed "s|$SRC|$DEST/$(basename $SRC)|")
@@ -227,7 +262,7 @@ install_script() {
     *) sed -i "1a $i=$(eval echo \$$i)" $1 ;;
     esac
   done
-  [ "$1" == "$MODPATH/uninstall.sh" ] && return 0
+  [ "$1" = "$MODPATH/uninstall.sh" ] && return 0
   case $(basename $1) in
   post-fs-data.sh | service.sh) ;;
   *) cp_ch -n $1 $INPATH/$(basename $1) 0755 ;;
@@ -266,31 +301,22 @@ ui_print "ⓘ Logging verbosely to ${EXT_DATA}/logs"
 set -x
 exec 2>"$EXT_DATA"/logs/install.log
 
-ui_print "ⓘ Setting up install environment"
-
-# Extract files
-
-unzip -o "$ZIPFILE" -x 'META-INF/*' -d $MODPATH >&2
-[ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
-mkdir -p "$MODPATH"/tools
-cp -rf "$MODPATH"/common/tools/curl-"$ARCH" "$MODPATH"/tools/curl
-cp -rf "$MODPATH"/common/tools/bash-"$ARCH" "$MODPATH"/tools/bash
-chmod -R a+x $MODPATH/tools
 # Run addons
 if [ "$(ls -A $MODPATH/common/addon/*/install.sh 2>/dev/null)" ]; then
   ui_print " "
-  ui_print "- Running Addons -"
+  ui_print "ⓘ Running Addons -"
   for i in "$MODPATH"/common/addon/*/install.sh; do
-    ui_print "  Running $(echo $i | sed -r "s|$MODPATH/common/addon/(.*)/install.sh|\1|")..."
+    ui_print "ⓘ Running $(echo $i | sed -r "s|$MODPATH/common/addon/(.*)/install.sh|\1|")..."
     . $i
   done
 fi
 
 # Remove files outside of module directory
+ui_print "ⓘ Removing old files"
 
 if [ -f $INFO ]; then
   while read -r LINE; do
-    if [ "$(echo -n $LINE | tail -c 1)" == "~" ]; then
+    if [ "$(echo -n $LINE | tail -c 1)" = "~" ]; then
       continue
     elif [ -f "$LINE~" ]; then
       mv -f $LINE~ $LINE
@@ -310,6 +336,7 @@ if [ -f $INFO ]; then
 fi
 
 ### Install
+ui_print "ⓘ Installing"
 
 [ -f "$MODPATH/common/install.sh" ] && . $MODPATH/common/install.sh
 
@@ -353,10 +380,10 @@ fi
 
 # Set permissions
 ui_print " "
-ui_print "ⓘ Completing install"
+ui_print "ⓘ Setting Permissions"
 set_perm_recursive $MODPATH 0 0 0755 0644
-chmod -R 0755 $MODPATH/tools/*
-chmod -R 0755 $MODPATH/system/bin/*
+set_perm_recursive $MODPATH/tools 0 0 0755 0755
+set_perm_recursive $MODPATH/system/bin 0 0 0755 0755
 if [ -d $MODPATH/system/vendor ]; then
   set_perm_recursive $MODPATH/system/vendor 0 0 0755 0644 u:object_r:vendor_file:s0
   [ -d $MODPATH/system/vendor/app ] && set_perm_recursive $MODPATH/system/vendor/app 0 0 0755 0644 u:object_r:vendor_app_file:s0

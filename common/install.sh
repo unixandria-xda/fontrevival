@@ -1,25 +1,6 @@
 # shellcheck shell=ash
 # shellcheck disable=SC2169
 # shellcheck disable=SC2121
-do_banner() {
-	ui_print "*************************************************"
-	ui_print "  _____              _                           "
-	ui_print " |  ___|___   _ __  | |_                         "
-	ui_print " | |_  / _ \ | '_ \ | __|                        "
-	ui_print " |  _|| (_) || | | || |_                         "
-	ui_print " |_|   \___/ |_| |_| \__|                        "
-	ui_print "  __  __                                         "
-	ui_print " |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ "
-	ui_print " | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|"
-	ui_print " | |  | || (_| || | | || (_| || (_| ||  __/| |   "
-	ui_print " |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   "
-	ui_print "                               |___/             "
-	ui_print "*************************************************"
-	ui_print "An Androidacy project - androidacy.com"
-	ui_print "*************************************************"
-	sleep 2
-}
-do_banner
 ui_print "ⓘ Welcome to Font Manager!"
 xml_s() {
 	ui_print "ⓘ Registering our fonts"
@@ -108,7 +89,7 @@ xml_s() {
 }
 get_lists() {
 	test_connection
-	if test $? -ne 0; then
+	if ! $INTERNET; then
 		ui_print "ⓘ No internet access!"
 		ui_print "ⓘ This module requires internet access."
 		ui_print "ⓘ There is no current plans for making it work offline, as it requires certain online files."
@@ -142,11 +123,12 @@ extra_cleanup() {
 	mkdir "$MODPATH"/tools/
 	mv "$MODPATH"/common/tools/fontmanager.sh "$MODPATH"/tools/fontmanager
 	mv "$MODPATH"/common/tools/utils.sh "$MODPATH"/tools/utils
-	chmod -R a+x "$MODPATH"/tools
+	mv "$MODPATH/common/tools/curl-$ARCH" "$MODPATH/tools/curl"
+	mv "$MODPATH/common/tools/bash-$ARCH" "$MODPATH/tools/bash"
 	rm -fr "$MODPATH"/common/
 	rm -rf "$MODPATH"/*.md
 	rm -rf "$MODPATH"/LICENSE
-	test_connection && dl "&i=1" "/dev/null" "ping"
+	$INTERNET && curl -s -d "$P&i=1" "$U"/ping >/dev/null
 }
 get_lists
 copy_lists

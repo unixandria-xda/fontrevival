@@ -201,7 +201,7 @@ test_connection() {
 }
 dl() {
   if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
-    ui_print "⚠ Download failed! Bailing out!"
+    echo -e "⚠ Download failed! Bailing out!"
     it_failed
   fi
 }

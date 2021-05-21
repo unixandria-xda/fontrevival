@@ -3,7 +3,6 @@
 # shellcheck disable=SC2034,SC2183,SC2154,SC1091
 clear
 echo "Loading..."
-trap ctrl_c do_quit
 detect_ext_data() {
     if touch /sdcard/.rw && rm /sdcard/.rw; then
         export EXT_DATA="/sdcard/FontManager"
@@ -24,12 +23,14 @@ if test ! -d "$EXT_DATA"; then
 fi
 if ! touch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
     if ! rm -fr "$EXT_DATA" && touch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
-        echo -e "⚠ Cannot access internal storage!"
-        it_failed
+        echo -e "⚠ Cannot access internal storage! Falling back to module directory"
+        EXT_DATA="/data/adb/modules/fontrevival"
     fi
 fi
 mkdir -p "$EXT_DATA"/logs >/dev/null
 mkdir -p "$EXT_DATA"/lists >/dev/null
+mkdir -p "$EXT_DATA"/font >/dev/null
+mkdir -p "$EXT_DATA"/emoji >/dev/null
 MODDIR="/data/adb/modules/fontrevival"
 exec > >(tee -ia "$EXT_DATA"/logs/script.log)
 exec 2> >(tee -ia "$EXT_DATA"/logs/script.log >&2)
@@ -49,22 +50,6 @@ if test "$(id -u)" -ne 0; then
     echo -e "${R}Please run this script as root!${N}"
     exit 1
 fi
-do_banner() {
-    clear
-    echo -e "${B}  _____              _                           ${N}"
-    echo -e "${B} |  ___|___   _ __  | |_                         ${N}"
-    echo -e "${B} | |_  / _ \ | '_ \ | __|                        ${N}"
-    echo -e "${B} |  _|| (_) || | | || |_                         ${N}"
-    echo -e "${B} |_|   \___/ |_| |_| \__|                        ${N}"
-    echo -e "${B}  __  __                                         ${N}"
-    echo -e "${B} |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ${N}"
-    echo -e "${B} | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|${N}"
-    echo -e "${B} | |  | || (_| || | | || (_| || (_| ||  __/| |   ${N}"
-    echo -e "${B} |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ${N}"
-    echo -e "${B}                               |___/             ${N}"
-    echo -e "${B}An Androidacy project. Visit us @ androidacy.com${N}"
-    echo -e "$div"
-}
 if ! $NR; then
     echo -e "${R}Do not call this script directly! Instead call just 'manage_fonts'${N}"
     it_failed
@@ -82,32 +67,30 @@ font_select() {
     clear
     do_banner
     sleep 0.5
-    echo -e "${G}Fonts selected.${N}"
-    sleep 0.5
-    echo -e "${G}Please type the name of the font you would like to apply from this list:${N}"
+    echo -e "${G}Font changer selected. Please type the appropriate number when prompted.${N}"
     echo -e "$div"
-    sleep 2
+    sleep 3
     LINESTART=1
-    TOTALLINES=$(wc -l /sdcard/FontManager/lists/fonts-list.txt | awk '{ print $1 }')
-    USABLELINES=$((LINES - 17))
     print_list() {
+        do_banner
+        TOTALLINES=$(wc -l /sdcard/FontManager/lists/fonts-list.txt | awk '{ print $1 }')
+        USABLELINES=$((LINES - 17))
+        LINESREAD=$((LINESTART + USABLELINES))
         if test $LINESTART -ge "$TOTALLINES"; then
             LINESTART=1
         fi
-        do_banner
-        LINESREAD=$((LINESTART + USABLELINES))
         awk '{printf "%d.\t%s\n", NR, $0}' <"$MODDIR"/lists/fonts-list.txt | sed -n ${LINESTART},${LINESREAD}p
+        echo -e "$div"
+        echo -e "${G}x: main menu, q: quit, enter: more, <number>: select${N}"
+        echo -en "${G}Your choice: ${N}"
+        unset a
+        read -r a
+        if test "$a" == ""; then
+            LINESTART=$((LINESTART + USABLELINES))
+            print_list
+        fi
     }
     print_list
-    sleep 1
-    echo -e "$div"
-    echo -e "${G}x to go to main menu, q to quit, enter for more${N}"
-    echo -en "${G}Please make a selection: ${N}"
-    read -r a
-    if [[ "$a" == "" ]]; then
-        LINESTART=$((LINESTART + USABLELINES))
-        print_list
-    fi
     if test "$a" == "q"; then
         do_quit
     elif test "$a" == "x"; then
@@ -117,77 +100,69 @@ font_select() {
         menu_set
     fi
     choice=$(sed "${a}q;d" "$MODDIR"/lists/fonts-list.txt)
-    if [[ -n $choice ]]; then
+    if [[ -z $choice ]]; then
         do_banner
         echo -e "${R}ERROR: INVALID SELECTION${N}"
         sleep 0.5
         echo -e "${Y}Please try again${N}"
         sleep 3
-        font _select
+        font_select
     fi
     do_banner
-    test_connection &
-    e_spinner "${Y}Checking for internet access ${N}"
-    if test $? -ne 0; then
-        no_i
-    else
-        dl "&s=fonts&w=&a=$choice&ft=zip" "$EXT_DATA/font/$choice.zip" "download" && sleep 1 &
-        e_spinner "${G}Downloading $choice font ${N}"
-        sleep 2
-        in_f() {
-            unzip -o "$EXT_DATA"/font/"$choice".zip -d "$MODDIR/system/fonts" &>/dev/null
-            set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
-            if test -d /product/fonts; then
-                mkdir -p "$MODDIR"/system/product/fonts
-                cp "$MODDIR"/system/fonts/* "$MODDIR"/system/product/fonts/
-                set_perm_recursive 644 root root 0 "$MODDIR"/system/product/fonts/*
-            fi
-            if test -d /system_ext/fonts; then
-                mkdir -p "$MODDIR"/system/system_ext/fonts
-                cp "$MODDIR"/system/fonts/* "$MODDIR"/system/system_ext/fonts/
-                set_perm_recursive 644 root root 0 "$MODDIR"/system/system_ext/fonts/*
-            fi
-            echo "$choice" >"$MODDIR"/cfont
-            sleep 1
-        }
-        in_f &
-        e_spinner "${G}Installing $choice font ${N}"
-        echo -e " "
-        echo -e "${G}Install success! Returning to menu${N}"
-        sleep 2
-    fi
+    dl "&s=fonts&w=&a=$choice&ft=zip" "$EXT_DATA/font/$choice.zip" "download" && sleep 1 &
+    e_spinner "${G}Downloading $choice font ${N}"
+    sleep 2
+    in_f() {
+        unzip -o "$EXT_DATA"/font/"$choice".zip -d "$MODDIR/system/fonts" &>/dev/null
+        set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
+        if test -d /product/fonts; then
+            mkdir -p "$MODDIR"/system/product/fonts
+            cp "$MODDIR"/system/fonts/* "$MODDIR"/system/product/fonts/
+            set_perm_recursive 644 root root 0 "$MODDIR"/system/product/fonts/*
+        fi
+        if test -d /system_ext/fonts; then
+            mkdir -p "$MODDIR"/system/system_ext/fonts
+            cp "$MODDIR"/system/fonts/* "$MODDIR"/system/system_ext/fonts/
+            set_perm_recursive 644 root root 0 "$MODDIR"/system/system_ext/fonts/*
+        fi
+        echo "$choice" >"$MODDIR"/cfont
+        sleep 1.5
+    }
+    in_f &
+    e_spinner "${G}Installing $choice font ${N}"
+    echo -e " "
+    echo -e "${G}Install success! Returning to menu${N}"
+    sleep 2
     menu_set
 }
 emoji_select() {
     clear
     do_banner
     sleep 0.5
-    echo -e "${G}emojis selected.${N}"
-    sleep 0.5
-    echo -e "${G}Please type the name of the emoji you would like to apply from this list:${N}"
+    echo -e "${G}Emoji changer selected. Please type the appropriate number when prompted.${N}"
     echo -e "$div"
-    sleep 2
+    sleep 3
     LINESTART=1
-    TOTALLINES=$(wc -l /sdcard/FontManager/lists/emojis-list.txt | awk '{ print $1 }')
-    USABLELINES=$((LINES - 17))
     print_list() {
+        do_banner
+        TOTALLINES=$(wc -l /sdcard/FontManager/lists/emojis-list.txt | awk '{ print $1 }')
+        USABLELINES=$((LINES - 17))
+        LINESREAD=$((LINESTART + USABLELINES))
         if test $LINESTART -ge "$TOTALLINES"; then
             LINESTART=1
         fi
-        do_banner
-        LINESREAD=$((LINESTART + USABLELINES))
         awk '{printf "%d.\t%s\n", NR, $0}' <"$MODDIR"/lists/emojis-list.txt | sed -n ${LINESTART},${LINESREAD}p
+        echo -e "$div"
+        echo -e "${G}x: main menu, q: quit, enter: more, <number>: select${N}"
+        echo -en "${G}Your choice: ${N}"
+        unset a
+        read -r a
+        if test "$a" == ""; then
+            LINESTART=$((LINESTART + USABLELINES))
+            print_list
+        fi
     }
     print_list
-    sleep 1
-    echo -e "$div"
-    echo -e "${G}x to go to main menu, q to quit, enter for more${N}"
-    echo -en "${G}Please make a selection: ${N}"
-    read -r a
-    if [[ "$a" == "" ]]; then
-        LINESTART=$((LINESTART + USABLELINES))
-        print_list
-    fi
     if test "$a" == "q"; then
         do_quit
     elif test "$a" == "x"; then
@@ -197,70 +172,58 @@ emoji_select() {
         menu_set
     fi
     choice=$(sed "${a}q;d" "$MODDIR"/lists/emojis-list.txt)
-    if [[ -n $choice ]]; then
+    if [[ -z $choice ]]; then
         do_banner
         echo -e "${R}ERROR: INVALID SELECTION${N}"
         sleep 0.5
         echo -e "${Y}Please try again${N}"
         sleep 3
-        emoji _select
+        font_select
     fi
     do_banner
-    test_connection &
-    e_spinner "${Y}Checking for internet access ${N}"
-    if test $? -ne 0; then
-        no_i
-    else
-        dl "&s=emojis&w=&a=$choice&ft=zip" "$EXT_DATA/emoji/$choice.zip" "download" && sleep 1 &
-        e_spinner "${G}Downloading $choice emoji ${N}"
-        sleep 2
-        in_f() {
-            unzip -o "$EXT_DATA"/emoji/"$choice".zip -d "$MODDIR/system/fonts" &>/dev/null
-            set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
-            if test -d /product/fonts; then
-                mkdir -p "$MODDIR"/system/product/fonts
-                cp "$MODDIR"/system/fonts/* "$MODDIR"/system/product/fonts/
-                set_perm_recursive 644 root root 0 "$MODDIR"/system/product/fonts/*
-            fi
-            if test -d /system_ext/fonts; then
-                mkdir -p "$MODDIR"/system/system_ext/fonts
-                cp "$MODDIR"/system/fonts/* "$MODDIR"/system/system_ext/fonts/
-                set_perm_recursive 644 root root 0 "$MODDIR"/system/system_ext/fonts/*
-            fi
-            echo "$choice" >"$MODDIR"/cfont
-            sleep 1
-        }
-        in_f &
-        e_spinner "${G}Installing $choice emoji ${N}"
-        echo -e " "
-        echo -e "${G}Install success! Returning to menu${N}"
-        sleep 2
-    fi
+    dl "&s=emojis&w=&a=$choice&ft=zip" "$EXT_DATA/emoji/$choice.zip" "download" && sleep 1 &
+    e_spinner "${G}Downloading $choice emoji set ${N}"
+    sleep 2
+    in_f() {
+        unzip -o "$EXT_DATA"/emoji/"$choice".zip -d "$MODDIR/system/fonts" &>/dev/null
+        set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
+        if test -d /product/fonts; then
+            mkdir -p "$MODDIR"/system/product/fonts
+            cp "$MODDIR"/system/fonts/* "$MODDIR"/system/product/fonts/
+            set_perm_recursive 644 root root 0 "$MODDIR"/system/product/fonts/*
+        fi
+        if test -d /system_ext/fonts; then
+            mkdir -p "$MODDIR"/system/system_ext/fonts
+            cp "$MODDIR"/system/fonts/* "$MODDIR"/system/system_ext/fonts/
+            set_perm_recursive 644 root root 0 "$MODDIR"/system/system_ext/fonts/*
+        fi
+        echo "$choice" >"$MODDIR"/cemoji
+        sleep 1.5
+    }
+    in_f &
+    e_spinner "${G}Installing $choice emoji set ${N}"
+    echo -e " "
+    echo -e "${G}Install success! Returning to menu${N}"
+    sleep 2
     menu_set
 }
 update_lists() {
     do_banner
-    test_connection &
-    e_spinner "${Y}Checking for internet access ${N}"
-    if test $? -ne 0; then
-        no_i
-    else
-        mkdir -p "$MODDIR"/lists
-        dl_l() {
-            dl "&s=lists&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt "download"
-            dl "&s=lists&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt "download"
-            sed -i s/[.]zip//gi "$MODDIR"/lists/*
-            cp "$MODDIR"/lists/* "$EXT_DATA"/lists
-            sleep 1.75
-        }
-        dl_l &
-        e_spinner "${G}Downloading fresh lists ${N}"
-        echo -e " "
-        echo -e "${Y}Lists updated! Returning to menu${N}"
-        sleep 2
-        clear
-        menu_set
-    fi
+    mkdir -p "$MODDIR"/lists
+    dl_l() {
+        dl "&s=lists&w=&a=fonts-list&ft=txt" "$MODDIR"/lists/fonts-list.txt "download"
+        dl "&s=lists&w=&a=emojis-list&ft=txt" "$MODDIR"/lists/emojis-list.txt "download"
+        sed -i s/[.]zip//gi "$MODDIR"/lists/*
+        cp "$MODDIR"/lists/* "$EXT_DATA"/lists
+        sleep 1.75
+    }
+    dl_l &
+    e_spinner "${G}Downloading fresh lists ${N}"
+    echo -e " "
+    echo -e "${Y}Lists updated! Returning to menu${N}"
+    sleep 2
+    clear
+    menu_set
 }
 get_id() {
     sed -n 's/^name=//p' "${1}"
@@ -305,7 +268,13 @@ rever_st() {
     menu_set
 }
 open_link() {
-    am start -a android.intent.action.VIEW -d https://www.androidacy.com/"$1"/
+    do_banner
+    echo -e "${G}Opening https://www.androidacy.com/$1/ ...${N}"
+    sleep 1
+    am start -a android.intent.action.VIEW -d https://www.androidacy.com/"$1"/ &>/dev/null
+    echo -e "${G}Page should be open. Returning to menu.${N}"
+    sleep 2
+    menu_set
 }
 menu_set() {
     while :; do

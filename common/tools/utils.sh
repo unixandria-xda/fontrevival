@@ -22,10 +22,39 @@ N='\e[0m'          # How to use (example): echo "${G}example${N}"
 loadBar=' '        # Load UI
 COLUMNS="$(stty size | cut -d" " -f2)"
 div="${Bl}$(printf '%*s' $((COLUMNS * 90 / 100)) '' | tr " " "=")${N}"
+# Print module banner
+do_banner() {
+  clear
+  echo -e "${B}  _____              _                           ${N}"
+  echo -e "${B} |  ___|___   _ __  | |_                         ${N}"
+  echo -e "${B} | |_  / _ \ | '_ \ | __|                        ${N}"
+  echo -e "${B} |  _|| (_) || | | || |_                         ${N}"
+  echo -e "${B} |_|   \___/ |_| |_| \__|                        ${N}"
+  echo -e "${B}  __  __                                         ${N}"
+  echo -e "${B} |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ${N}"
+  echo -e "${B} | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|${N}"
+  echo -e "${B} | |  | || (_| || | | || (_| || (_| ||  __/| |   ${N}"
+  echo -e "${B} |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ${N}"
+  echo -e "${B}                               |___/             ${N}"
+  echo -e "${B}An Androidacy project. Visit us @ androidacy.com${N}"
+  echo -e "$div"
+}
+# Handle user quit
+do_quit() {
+  clear
+  do_banner
+  echo -e "${G}Thanks for using Font Manager${N}"
+  echo -e "${G}Goodbye${N}"
+  sleep 2
+  exit 0
+}
+stty -echoctl
+trap do_quit INT
 e_spinner() {
   PID=$!
   h=0
   anim='⠋⠙⠴⠦'
+  do_banner
   while [ -d /proc/$PID ]; do
     h=$(((h + 1) % 4))
     sleep 0.05
@@ -195,12 +224,22 @@ if [ "$ABILONG" = "x86_64" ]; then
   ARCH32=x86
   IS64BIT=true
 fi
-A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release); D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name); S=$(su -c "wm size | cut -c 16-"); L=$(resetprop persist.sys.locale || resetprop ro.product.locale); M="fm"; P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"; U="https://api.androidacy.com"
-test_connection() {
-  (curl "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
-}
+# Do device detection, then set the API url. The API uses this to serve an appropriate response.
+# Note that modules that modify props can mess with this and cause an inappropriate file to be served.
+A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
+D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name)
+S=$(su -c "wm size | cut -c 16-")
+L=$(resetprop persist.sys.locale || resetprop ro.product.locale)
+M="fm"
+P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"
+U="https://api.androidacy.com"
+if ! curl -s -d "$P" "$U"/ping &>/dev/null; then
+  echo -e "${R}No internet access, or the API is down! Try again later!${N}"
+  echo -e "${R}The module will exit now, as it needs connectivity with the API to work.${N}"
+  exit 1
+fi
 dl() {
-  if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then
+  if ! curl -d "$P$1" "$U"/"$3" -o "$2"; then
     echo -e "⚠ Download failed! Bailing out!"
     it_failed
   fi
@@ -333,14 +372,4 @@ mod_head() {
   echo "${Bl}$_bb${N}"
   echo "$div"
   [ -s $LOG ] && echo "Enter ${W}logs${N} to upload logs" && echo $div
-}
-
-# Handle user quit
-do_quit() {
-    clear
-    do_banner
-    echo -e "${G}Thanks for using Font Manager${N}"
-    echo -e "${G}Goodbye${N}"
-    sleep 2
-    exit 0
 }

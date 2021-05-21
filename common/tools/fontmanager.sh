@@ -22,7 +22,7 @@ if test ! -d "$EXT_DATA"; then
     mkdir -p "$EXT_DATA" >/dev/null
 fi
 if ! touch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
-    if ! rm -fr "$EXT_DATA" && touch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
+    if ! rm -fr "$EXT_DATA" && mkdir -p "$EXT_DATA" && touch "$EXT_DATA"/.rw && rm -fr "$EXT_DATA"/.rw; then
         echo -e "⚠ Cannot access internal storage! Falling back to module directory"
         EXT_DATA="/data/adb/modules/fontrevival"
     fi

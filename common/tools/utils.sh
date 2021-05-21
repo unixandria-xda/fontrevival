@@ -33,22 +33,22 @@ e_spinner() {
   done
 }
 it_failed() {
-  set +euxo pipefail
+  do_banner
   if test -z "$1" || test "$1" -ne 0; then
     echo -e "$div"
-    echo -e "${R} ⓧ ERROR ⓧ ${N}"
-    echo -e "${R}Something bad happened and the script has encountered an issue${N}"
-    echo -e "${R}Make sure you're following instructions and try again!${N}"
-    echo -e "${R} ⓧ ERROR ⓧ ${N}"
+    echo -e "${R}ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ${N}"
+    echo -e "${R}Something bad happened, and we've hit a snag.${N}"
+    echo -e "${R}We'll take you back to the menu here to try again.${N}"
+    echo -e "${R}ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ${N}"
     echo -e "$div"
-    echo -e "Exiting the script now!"
   fi
-  exit "$1" || exit 1
+  sleep 4
+  menu_set
 }
 
 # Versions
-MODUTILVER=v2.6.1
-MODUTILVCODE=261
+MODUTILVER=v3.0.1-androidacy
+MODUTILVCODE=262
 MODDIR=/data/adb/modules/fontrevival
 # Check A/B slot
 if [ -d /system_root ]; then
@@ -195,7 +195,7 @@ if [ "$ABILONG" = "x86_64" ]; then
   ARCH32=x86
   IS64BIT=true
 fi
-A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release) && D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
+A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release); D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name); S=$(su -c "wm size | cut -c 16-"); L=$(resetprop persist.sys.locale || resetprop ro.product.locale); M="fm"; P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"; U="https://api.androidacy.com"
 test_connection() {
   (curl "$P" "$U"/ping >/dev/null 2>&1) && return 0 || return 1
 }
@@ -333,4 +333,14 @@ mod_head() {
   echo "${Bl}$_bb${N}"
   echo "$div"
   [ -s $LOG ] && echo "Enter ${W}logs${N} to upload logs" && echo $div
+}
+
+# Handle user quit
+do_quit() {
+    clear
+    do_banner
+    echo -e "${G}Thanks for using Font Manager${N}"
+    echo -e "${G}Goodbye${N}"
+    sleep 2
+    exit 0
 }

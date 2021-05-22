@@ -115,7 +115,15 @@ font_select() {
     e_spinner "${Bl} Downloading $choice font ${N}"
     sleep 2
     in_f() {
-        unzip -o "$EXT_DATA"/font/"$choice".zip -d "$MODDIR/system/fonts" &>/dev/null
+        RESULTF="$EXT_DATA"/font/"$choice".zip
+        if [ ! -f "$RESULTF" ]; then
+            echo -e "${R}Downloaded file not found. The font was not installed.${N}"
+            echo -e "${R}Returning to menu${N}"
+            sleep 2
+            menu_set
+            return
+        fi
+        unzip -o "$RESULTF" -d "$MODDIR/system/fonts" &>/dev/null
         set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
         if test -d /product/fonts; then
             mkdir -p "$MODDIR"/system/product/fonts
@@ -189,7 +197,15 @@ emoji_select() {
     e_spinner "${Bl} Downloading $choice emoji set ${N}"
     sleep 2
     in_f() {
-        unzip -o "$EXT_DATA"/emoji/"$choice".zip -d "$MODDIR/system/fonts" &>/dev/null
+        RESULTE="$EXT_DATA"/emoji/"$choice".zip
+        if [ ! -f "$RESULTE" ]; then
+            echo -e "${R}Downloaded file not found. The emoji set was not installed.${N}"
+            echo -e "${R}Returning to menu${N}"
+            sleep 2
+            menu_set
+            return
+        fi
+        unzip -o "$RESULTE" -d "$MODDIR/system/fonts" &>/dev/null
         set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
         if test -d /product/fonts; then
             mkdir -p "$MODDIR"/system/product/fonts

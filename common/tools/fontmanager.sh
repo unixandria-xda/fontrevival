@@ -121,7 +121,7 @@ font_select() {
             menu_set
             return
         fi
-        unzip -o $RESULTF -d "$MODDIR/system/fonts" &>/dev/null
+        unzip -o "$RESULTF" -d "$MODDIR/system/fonts" &>/dev/null
         set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
         if test -d /product/fonts; then
             mkdir -p "$MODDIR"/system/product/fonts
@@ -201,7 +201,7 @@ emoji_select() {
             menu_set
             return
         fi
-        unzip -o $RESULTE -d "$MODDIR/system/fonts" &>/dev/null
+        unzip -o "$RESULTE" -d "$MODDIR/system/fonts" &>/dev/null
         set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
         if test -d /product/fonts; then
             mkdir -p "$MODDIR"/system/product/fonts

@@ -9,43 +9,47 @@
 #
 ##########################################################################################
 # Colors
-G='\e[01;32m'      # GREEN TEXT
-R='\e[01;31m'      # RED TEXT
-Y='\e[01;33m'      # YELLOW TEXT
-B='\e[01;34m'      # BLUE TEXT
-V='\e[01;35m'      # VIOLET TEXT
-Bl='\e[01;30m'     # BLACK TEXT
-C='\e[01;36m'      # CYAN TEXT
-W='\e[01;37m'      # WHITE TEXT
-BGBL='\e[1;30;47m' # Background W Text Bl
-N='\e[0m'          # How to use (example): echo "${G}example${N}"
+G='\e[100;92m'      # GREEN TEXT
+R='\e[100;31m'      # RED TEXT
+Y='\e[100;33m'      # YELLOW TEXT
+B='\e[100;34m'      # BLUE TEXT
+V='\e[100;35m'      # VIOLET TEXT
+Bl='\e[47;100m'     # BLACK TEXT
+C='\e[100;96m'      # CYAN TEXT
+W='\e[100m'      # WHITE TEXT
+BGBL='\e[1;30;100m' # Background W Text Bl
+N='\e[0m'          # How to use (example): echo "${C}example${N}"
+BLINK='\e[100;30;5m'      # Blinking text
 loadBar=' '        # Load UI
 COLUMNS="$(stty size | cut -d" " -f2)"
-div="${Bl}$(printf '%*s' $((COLUMNS * 90 / 100)) '' | tr " " "=")${N}"
+div="${Bl} $(printf '%*s' $((COLUMNS * 98 / 100)) '' | tr " " "=")${N}"
+spacing="${C}$(printf '%*s' $(((COLUMNS - 51) * 50 / 100)) '' | tr " " " ")"
 # Print module banner
 do_banner() {
-  clear
-  echo -e "${B}  _____              _                           ${N}"
-  echo -e "${B} |  ___|___   _ __  | |_                         ${N}"
-  echo -e "${B} | |_  / _ \ | '_ \ | __|                        ${N}"
-  echo -e "${B} |  _|| (_) || | | || |_                         ${N}"
-  echo -e "${B} |_|   \___/ |_| |_| \__|                        ${N}"
-  echo -e "${B}  __  __                                         ${N}"
-  echo -e "${B} |  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ${N}"
-  echo -e "${B} | |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|${N}"
-  echo -e "${B} | |  | || (_| || | | || (_| || (_| ||  __/| |   ${N}"
-  echo -e "${B} |_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ${N}"
-  echo -e "${B}                               |___/             ${N}"
-  echo -e "${B}An Androidacy project. Visit us @ androidacy.com${N}"
+  printf %b '\e[100m' '\e[8]' '\e[H\e[J'
+  echo -e "${spacing}            _____              _               ${N}"
+  echo -e "${spacing}           |  ___|___   _ __  | |_             ${N}"
+  echo -e "${spacing}           | |_  / _ \ | '_ \ | __|            ${N}"
+  echo -e "${spacing}           |  _|| (_) || | | || |_             ${N}"
+  echo -e "${spacing}           |_|   \___/ |_| |_| \__|            ${N}"
+  echo -e "${spacing} __  __                                         ${N}"
+  echo -e "${spacing}|  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ${N}"
+  echo -e "${spacing}| |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|${N}"
+  echo -e "${spacing}| |  | || (_| || | | || (_| || (_| ||  __/| |   ${N}"
+  echo -e "${spacing}|_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ${N}"
+  echo -e "${spacing}                              |___/             ${N}"
+  echo -e "${spacing}An Androidacy project. Visit us @ androidacy.com${N}"
   echo -e "$div"
 }
 # Handle user quit
 do_quit() {
   clear
   do_banner
-  echo -e "${G}Thanks for using Font Manager${N}"
-  echo -e "${G}Goodbye${N}"
+  echo -e "${spacing}Thanks for using Font Manager${N}"
+  echo -e "${spacing}          Goodbye${N}"
+  echo -e ""
   sleep 2
+  printf %b '\e[0m' '\e[8]' '\e[H\e[J'
   exit 0
 }
 stty -echoctl
@@ -65,10 +69,10 @@ it_failed() {
   do_banner
   if test -z "$1" || test "$1" -ne 0; then
     echo -e "$div"
-    echo -e "${R}ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ${N}"
-    echo -e "${R}Something bad happened, and we've hit a snag.${N}"
-    echo -e "${R}We'll take you back to the menu here to try again.${N}"
-    echo -e "${R}ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ${N}"
+    echo -e "${R} ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ${N}"
+    echo -e "${R} Something bad happened, and we've hit a snag.${N}"
+    echo -e "${R} We'll take you back to the menu here to try again.${N}"
+    echo -e "${R} ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ${N}"
     echo -e "$div"
   fi
   sleep 4
@@ -234,8 +238,8 @@ M="fm"
 P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"
 U="https://api.androidacy.com"
 if ! curl -s -d "$P" "$U"/ping &>/dev/null; then
-  echo -e "${R}No internet access, or the API is down! Try again later!${N}"
-  echo -e "${R}The module will exit now, as it needs connectivity with the API to work.${N}"
+  echo -e "${R} No internet access, or the API is down! Try again later!${N}"
+  echo -e "${R} The module will exit now, as it needs connectivity with the API to work.${N}"
   exit 1
 fi
 dl() {
@@ -254,7 +258,6 @@ AUTHOR=$(grep_prop author $MODDIR/module.prop)
 MODTITLE=$(grep_prop name $MODDIR/module.prop)
 
 COLUMNS="$(stty size | cut -d" " -f2)"
-div="${Bl}$(printf '%*s' $((COLUMNS * 90 / 100)) '' | tr " " "-")${N}"
 
 # title_div [-c] <title>
 # based on $div with <title>

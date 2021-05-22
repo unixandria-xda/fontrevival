@@ -12,7 +12,7 @@ detect_ext_data() {
         export EXT_DATA="/data/media/0/FontManager"
     else
         EXT_DATA='/storage/emulated/0/FontManager'
-        echo -e "⚠ Possible internal storage access issues! Please make sure data is mounted and decrypted."
+        echo -e "⚠ PossiBle internal storage access issues! Please make sure data is mounted and decrypted."
         echo -e "⚠ Trying to proceed anyway "
         sleep 2
     fi
@@ -47,19 +47,19 @@ if test -n "${ANDROID_SOCKET_adbd}"; then
     exit 1
 fi
 if test "$(id -u)" -ne 0; then
-    echo -e "${R}Please run this script as root!${N}"
+    echo -e "${R} Please run this script as root!${N}"
     exit 1
 fi
 if ! $NR; then
-    echo -e "${R}Do not call this script directly! Instead call just 'manage_fonts'${N}"
+    echo -e "${R} Do not call this script directly! Instead call just 'manage_fonts'${N}"
     it_failed
 fi
 TRY_COUNT=1
 no_i() {
     do_banner
-    echo -e "${R}No internet access!${N}"
-    echo -e "${R}For now this module requires internet access${N}"
-    echo -e "${R}Exiting${N}"
+    echo -e "${R} No internet access!${N}"
+    echo -e "${R} For now this module requires internet access${N}"
+    echo -e "${R} Exiting${N}"
     sleep 3
     it_failed
 }
@@ -67,26 +67,28 @@ font_select() {
     clear
     do_banner
     sleep 0.5
-    echo -e "${G}Font changer selected. Please type the appropriate number when prompted.${N}"
+    echo -e "${Bl} Font changer selected. Please type the appropriate number when prompted.${N}"
+    echo -e "${Bl} Proceeding to selection screen...${N}"
     echo -e "$div"
     sleep 3
     LINESTART=1
     print_list() {
         do_banner
         TOTALLINES=$(wc -l /sdcard/FontManager/lists/fonts-list.txt | awk '{ print $1 }')
-        USABLELINES=$((LINES - 17))
-        LINESREAD=$((LINESTART + USABLELINES))
+        USABlELINES=$((LINES - 17))
+        LINESREAD=$((LINESTART + USABlELINES))
         if test $LINESTART -ge "$TOTALLINES"; then
             LINESTART=1
+            LINESREAD=$USABlELINES
         fi
         awk '{printf "%d.\t%s\n", NR, $0}' <"$MODDIR"/lists/fonts-list.txt | sed -n ${LINESTART},${LINESREAD}p
         echo -e "$div"
-        echo -e "${G}x: main menu, q: quit, enter: more, <number>: select${N}"
-        echo -en "${G}Your choice: ${N}"
+        echo -e "${Bl} x: main menu, q: quit, enter: more, <number>: select${N}"
+        echo -en "${Bl} Your choice: ${N}"
         unset a
         read -r a
         if test "$a" == ""; then
-            LINESTART=$((LINESTART + USABLELINES))
+            LINESTART=$((LINESTART + USABlELINES))
             print_list
         fi
     }
@@ -95,22 +97,22 @@ font_select() {
         do_quit
     elif test "$a" == "x"; then
         do_banner
-        echo -e "${Y}Going to main menu ${N}"
+        echo -e "${Y} Going to main menu ${N}"
         sleep 1
         menu_set
     fi
     choice=$(sed "${a}q;d" "$MODDIR"/lists/fonts-list.txt)
     if [[ -z $choice ]]; then
         do_banner
-        echo -e "${R}ERROR: INVALID SELECTION${N}"
+        echo -e "${R} ERROR: INVALID SELECTION${N}"
         sleep 0.5
-        echo -e "${Y}Please try again${N}"
+        echo -e "${Y} Please try again${N}"
         sleep 3
         font_select
     fi
     do_banner
     dl "&s=fonts&w=&a=$choice&ft=zip" "$EXT_DATA/font/$choice.zip" "download" && sleep 1 &
-    e_spinner "${G}Downloading $choice font ${N}"
+    e_spinner "${Bl} Downloading $choice font ${N}"
     sleep 2
     in_f() {
         unzip -o "$EXT_DATA"/font/"$choice".zip -d "$MODDIR/system/fonts" &>/dev/null
@@ -129,9 +131,9 @@ font_select() {
         sleep 1.5
     }
     in_f &
-    e_spinner "${G}Installing $choice font ${N}"
+    e_spinner "${Bl} Installing $choice font ${N}"
     echo -e " "
-    echo -e "${G}Install success! Returning to menu${N}"
+    echo -e "${Bl} Install success! Returning to menu${N}"
     sleep 2
     menu_set
 }
@@ -139,26 +141,28 @@ emoji_select() {
     clear
     do_banner
     sleep 0.5
-    echo -e "${G}Emoji changer selected. Please type the appropriate number when prompted.${N}"
+    echo -e "${Bl} Emoji changer selected. Please type the appropriate number when prompted.${N}"
+    echo -e "${Bl} Proceeding to selection screen...${N}"
     echo -e "$div"
     sleep 3
     LINESTART=1
     print_list() {
         do_banner
         TOTALLINES=$(wc -l /sdcard/FontManager/lists/emojis-list.txt | awk '{ print $1 }')
-        USABLELINES=$((LINES - 17))
-        LINESREAD=$((LINESTART + USABLELINES))
+        USABlELINES=$((LINES - 17))
+        LINESREAD=$((LINESTART + USABlELINES))
         if test $LINESTART -ge "$TOTALLINES"; then
             LINESTART=1
+            LINESREAD=$USABlELINES
         fi
         awk '{printf "%d.\t%s\n", NR, $0}' <"$MODDIR"/lists/emojis-list.txt | sed -n ${LINESTART},${LINESREAD}p
         echo -e "$div"
-        echo -e "${G}x: main menu, q: quit, enter: more, <number>: select${N}"
-        echo -en "${G}Your choice: ${N}"
+        echo -e "${Bl} x: main menu, q: quit, enter: more, <number>: select${N}"
+        echo -en "${Bl} Your choice: ${N}"
         unset a
         read -r a
         if test "$a" == ""; then
-            LINESTART=$((LINESTART + USABLELINES))
+            LINESTART=$((LINESTART + USABlELINES))
             print_list
         fi
     }
@@ -167,22 +171,22 @@ emoji_select() {
         do_quit
     elif test "$a" == "x"; then
         do_banner
-        echo -e "${Y}Going to main menu ${N}"
+        echo -e "${Y} Going to main menu ${N}"
         sleep 1
         menu_set
     fi
     choice=$(sed "${a}q;d" "$MODDIR"/lists/emojis-list.txt)
     if [[ -z $choice ]]; then
         do_banner
-        echo -e "${R}ERROR: INVALID SELECTION${N}"
+        echo -e "${R} ERROR: INVALID SELECTION${N}"
         sleep 0.5
-        echo -e "${Y}Please try again${N}"
+        echo -e "${Y} Please try again${N}"
         sleep 3
         font_select
     fi
     do_banner
     dl "&s=emojis&w=&a=$choice&ft=zip" "$EXT_DATA/emoji/$choice.zip" "download" && sleep 1 &
-    e_spinner "${G}Downloading $choice emoji set ${N}"
+    e_spinner "${Bl} Downloading $choice emoji set ${N}"
     sleep 2
     in_f() {
         unzip -o "$EXT_DATA"/emoji/"$choice".zip -d "$MODDIR/system/fonts" &>/dev/null
@@ -201,9 +205,9 @@ emoji_select() {
         sleep 1.5
     }
     in_f &
-    e_spinner "${G}Installing $choice emoji set ${N}"
+    e_spinner "${Bl} Installing $choice emoji set ${N}"
     echo -e " "
-    echo -e "${G}Install success! Returning to menu${N}"
+    echo -e "${Bl} Install success! Returning to menu${N}"
     sleep 2
     menu_set
 }
@@ -218,9 +222,9 @@ update_lists() {
         sleep 1.75
     }
     dl_l &
-    e_spinner "${G}Downloading fresh lists ${N}"
+    e_spinner "${Bl} Downloading fresh lists ${N}"
     echo -e " "
-    echo -e "${Y}Lists updated! Returning to menu${N}"
+    echo -e "${Y} Lists updated! Returning to menu${N}"
     sleep 2
     clear
     menu_set
@@ -230,12 +234,12 @@ get_id() {
 }
 detect_others() {
     for i in /data/adb/modules/*/*; do
-        if test "$i" != "*fontrevival" && test ! -f "$i"/disable && test -d "$i"/system/fonts; then
+        if test "$i" != "*fontrevival" && test ! -f "$i"/disaBle && test -d "$i"/system/fonts; then
             NAME=$(get_id "$i"/module.prop)
-            echo -e "${R}⚠ ${N}"
-            echo -e "${R}⚠ Module editing font or emoji detected${N}"
-            echo -e "${R}⚠ Module - $NAME${N}"
-            echo -e "${R}⚠ Please remove said module and retry${N}"
+            echo -e "${R} ⚠ ${N}"
+            echo -e "${R} ⚠ Module editing font or emoji detected${N}"
+            echo -e "${R} ⚠ Module - $NAME${N}"
+            echo -e "${R} ⚠ Please remove said module and retry${N}"
             sleep 4
             it_failed
         fi
@@ -243,12 +247,12 @@ detect_others() {
 }
 reboot_fn() {
     do_banner
-    echo -en "${R}Are you sure you want to reboot? [y/N] ${N}"
+    echo -en "${R} Are you sure you want to reboot? [y/N] ${N}"
     read -r a
     if test "$a" == "y"; then
         /system/bin/svc power reboot || /system/bin/reboot || setprop sys.powerctl reboot
     else
-        echo -e "${Y}Reboot cancelled${N}"
+        echo -e "${Y} Reboot cancelled${N}"
         sleep 2
         menu_set
     fi
@@ -262,17 +266,17 @@ rever_st() {
         sleep 2
     }
     r_s &
-    e_spinner "${G}Reverting to stock fonts ${N}"
-    echo -e "\n${G}Stock fonts applied! Please reboot.${N}"
+    e_spinner "${Bl} Reverting to stock fonts ${N}"
+    echo -e "\n${Bl} Stock fonts applied! Please reboot.${N}"
     sleep 2
     menu_set
 }
 open_link() {
     do_banner
-    echo -e "${G}Opening https://www.androidacy.com/$1/ ...${N}"
+    echo -e "${Bl} Opening https://www.androidacy.com/$1/ ...${N}"
     sleep 1
     am start -a android.intent.action.VIEW -d https://www.androidacy.com/"$1"/ &>/dev/null
-    echo -e "${G}Page should be open. Returning to menu.${N}"
+    echo -e "${Bl} Page should be open. Returning to menu.${N}"
     sleep 2
     menu_set
 }
@@ -284,20 +288,20 @@ menu_set() {
                 echo "stock" >$MODDIR/c$i
             fi
         done
-        echo -e "${G}Current font is $(cat $MODDIR/cfont)${N}"
-        echo -e "${G}Current emoji is $(cat $MODDIR/cemoji)${N}"
+        echo -e "${Bl} Current font is $(cat $MODDIR/cfont)${N}"
+        echo -e "${Bl} Current emoji is $(cat $MODDIR/cemoji)${N}"
         echo -e "$div"
-        echo -e "${G}Available options:${N}"
-        echo -e "${G}1. Change your font${N}"
-        echo -e "${G}2. Change your emoji${N}"
-        echo -e "${G}3. Update font and emoji lists${N}"
-        echo -e "${G}4. Revert to stock font and emoji${N}"
-        echo -e "${G}5. Reboot to apply changes${N}"
-        echo -e "${G}6. Open font previews${N}"
-        echo -e "${G}7. Donate to Androidacy${N}"
-        echo -e "${G}8. Quit${N}"
+        echo -e "${Bl} Available options:${N}"
+        echo -e "${Bl}  1. Change your font${N}"
+        echo -e "${Bl}  2. Change your emoji${N}"
+        echo -e "${Bl}  3. Update font and emoji lists${N}"
+        echo -e "${Bl}  4. Revert to stock font and emoji${N}"
+        echo -e "${Bl}  5. Reboot to apply changes${N}"
+        echo -e "${Bl}  6. Open font previews${N}"
+        echo -e "${Bl}  7. Donate to Androidacy${N}"
+        echo -e "${Bl}  8. Quit${N}"
         echo -e "$div"
-        echo -en "${G}Please make a selection: ${N}"
+        echo -en "${Bl} Your selection: ${N}"
         read -r a
         case $a in
         1*) font_select ;;
@@ -308,7 +312,7 @@ menu_set() {
         6*) open_link "font-previewer" ;;
         7*) open_link "donate" ;;
         8*) do_quit ;;
-        *) echo -e "${R}Invalid option, please try again${N}" && sleep 2 && menu_set ;;
+        *) echo -e "${R} Invalid option, please try again${N}" && sleep 2 && menu_set ;;
         esac
     done
 }

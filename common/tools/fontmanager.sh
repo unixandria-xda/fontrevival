@@ -81,10 +81,10 @@ font_select() {
             LINESTART=1
             LINESREAD=$USABlELINES
         fi
-        awk '{printf "%d.\t%s\n", NR, $0}' <"$MODDIR"/lists/fonts-list.txt | sed -n ${LINESTART},${LINESREAD}p
+        awk '{printf "\033[47;100m%d.\t%s\n", NR, $0}' <"$MODDIR"/lists/fonts-list.txt | sed -n ${LINESTART},${LINESREAD}p
         echo -e "$div"
         echo -e "${Bl} x: main menu, q: quit, enter: more, <number>: select${N}"
-        echo -en "${Bl} Your choice: ${N}"
+        echo -en "${Bl} Your choice: "
         unset a
         read -r a
         if test "$a" == ""; then
@@ -112,16 +112,25 @@ font_select() {
     fi
     do_banner
     dl "&s=fonts&w=&a=$choice&ft=zip" "$EXT_DATA/font/$choice.zip" "download" && sleep 1 &
-    e_spinner "${Bl} Downloading $choice font ${N}"
+    e_spinner "${Bl} Downloading $choice font "
     sleep 2
     in_f() {
         RESULTF="$EXT_DATA"/font/"$choice".zip
         if [ ! -f "$RESULTF" ]; then
-            echo -e "${R}Downloaded file not found. The font was not installed.${N}"
-            echo -e "${R}Returning to menu${N}"
+            echo -e "${R} Downloaded file not found. The font was not installed.${N}"
+            echo -e "${R} Returning to font selection${N}"
             sleep 2
-            menu_set
+            font_select
             return
+        else
+            O_S=$(md5sum $RESULTF | sed "s/\ \/.*//" | tr -d '[:space:]')
+		    T_S=$(curl -d "${P}&s=fonts&w=&a=$choice&ft=zip" "$U"/verify | tr -d '[:space:]')
+		    if [ "$T_S" != "$O_S" ]; then
+		        echo -e "${R}Downloaded file corrupt. The font was not installed.${N}"
+                echo -e "${R}Returning to font selection${N}"
+                sleep 2
+                font_select
+            fi
         fi
         unzip -o "$RESULTF" -d "$MODDIR/system/fonts" &>/dev/null
         set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
@@ -139,7 +148,7 @@ font_select() {
         sleep 1.5
     }
     in_f &
-    e_spinner "${Bl} Installing $choice font ${N}"
+    e_spinner "${Bl} Installing $choice font "
     echo -e " "
     echo -e "${Bl} Install success! Returning to menu${N}"
     sleep 2
@@ -163,10 +172,10 @@ emoji_select() {
             LINESTART=1
             LINESREAD=$USABlELINES
         fi
-        awk '{printf "%d.\t%s\n", NR, $0}' <"$MODDIR"/lists/emojis-list.txt | sed -n ${LINESTART},${LINESREAD}p
+        awk '{printf "\033[47;100m%d.\t%s\n", NR, $0}' <"$MODDIR"/lists/emojis-list.txt | sed -n ${LINESTART},${LINESREAD}p
         echo -e "$div"
         echo -e "${Bl} x: main menu, q: quit, enter: more, <number>: select${N}"
-        echo -en "${Bl} Your choice: ${N}"
+        echo -en "${Bl} Your choice: "
         unset a
         read -r a
         if test "$a" == ""; then
@@ -194,16 +203,25 @@ emoji_select() {
     fi
     do_banner
     dl "&s=emojis&w=&a=$choice&ft=zip" "$EXT_DATA/emoji/$choice.zip" "download" && sleep 1 &
-    e_spinner "${Bl} Downloading $choice emoji set ${N}"
+    e_spinner "${Bl} Downloading $choice emoji set "
     sleep 2
-    in_f() {
+    in_e() {
         RESULTE="$EXT_DATA"/emoji/"$choice".zip
         if [ ! -f "$RESULTE" ]; then
-            echo -e "${R}Downloaded file not found. The emoji set was not installed.${N}"
-            echo -e "${R}Returning to menu${N}"
+            echo -e "${R} Downloaded file not found. The emoji set was not installed.${N}"
+            echo -e "${R} Returning to font selection${N}"
             sleep 2
-            menu_set
+            font_select
             return
+        else
+            O_S=$(md5sum $RESULTE | sed "s/\ \/.*//" | tr -d '[:space:]')
+		    T_S=$(curl -d "${P}&s=emojis&w=&a=$choice&ft=zip" "$U"/verify | tr -d '[:space:]')
+		    if [ "$T_S" != "$O_S" ]; then
+		        echo -e "${R} Downloaded file corrupt. The emoji set was not installed.${N}"
+                echo -e "${R} Returning to emoji selection${N}"
+                sleep 2
+                emoji_select
+            fi
         fi
         unzip -o "$RESULTE" -d "$MODDIR/system/fonts" &>/dev/null
         set_perm_recursive 644 root root 0 "$MODDIR"/system/fonts/*
@@ -220,8 +238,8 @@ emoji_select() {
         echo "$choice" >"$MODDIR"/cemoji
         sleep 1.5
     }
-    in_f &
-    e_spinner "${Bl} Installing $choice emoji set ${N}"
+    in_e &
+    e_spinner "${Bl} Installing $choice emoji set "
     echo -e " "
     echo -e "${Bl} Install success! Returning to menu${N}"
     sleep 2
@@ -263,7 +281,7 @@ detect_others() {
 }
 reboot_fn() {
     do_banner
-    echo -en "${R} Are you sure you want to reboot? [y/N] ${N}"
+    echo -en "${R} Are you sure you want to reboot? [y/N] "
     read -r a
     if test "$a" == "y"; then
         /system/bin/svc power reboot || /system/bin/reboot || setprop sys.powerctl reboot
@@ -317,7 +335,7 @@ menu_set() {
         echo -e "${Bl}  7. Donate to Androidacy${N}"
         echo -e "${Bl}  8. Quit${N}"
         echo -e "$div"
-        echo -en "${Bl} Your selection: ${N}"
+        echo -en "${Bl} Your selection: "
         read -r a
         case $a in
         1*) font_select ;;

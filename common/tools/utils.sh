@@ -21,24 +21,24 @@ BGBL='\e[1;30;100m' # Background W Text Bl
 N='\e[0m'          # How to use (example): echo "${C}example${N}"
 BLINK='\e[100;30;5m'      # Blinking text
 loadBar=' '        # Load UI
-COLUMNS="$(stty size | cut -d" " -f2)"
-div="${Bl} $(printf '%*s' $((COLUMNS * 98 / 100)) '' | tr " " "=")${N}"
-spacing="${C}$(printf '%*s' $(((COLUMNS - 51) * 50 / 100)) '' | tr " " " ")"
+#COLUMNS="$(stty size | cut -d" " -f2)"
+div="${Bl}$(printf '%*s' $COLUMNS '' | tr " " "=")${N}"
+spacing="${C}$(printf '%*s' $(((COLUMNS - 49) * 50 / 100)) '' | tr " " " ")"
 # Print module banner
 do_banner() {
   printf %b '\e[100m' '\e[8]' '\e[H\e[J'
-  echo -e "${spacing}            _____              _               ${N}"
-  echo -e "${spacing}           |  ___|___   _ __  | |_             ${N}"
-  echo -e "${spacing}           | |_  / _ \ | '_ \ | __|            ${N}"
-  echo -e "${spacing}           |  _|| (_) || | | || |_             ${N}"
-  echo -e "${spacing}           |_|   \___/ |_| |_| \__|            ${N}"
-  echo -e "${spacing} __  __                                         ${N}"
+  echo -e "${spacing}            _____              _   ${N}"
+  echo -e "${spacing}           |  ___|___   _ __  | |_ ${N}"
+  echo -e "${spacing}           | |_  / _ \ | '_ \ | __|${N}"
+  echo -e "${spacing}           |  _|| (_) || | | || |_ ${N}"
+  echo -e "${spacing}           |_|   \___/ |_| |_| \__|${N}"
+  echo -e "${spacing} __  __                            ${N}"
   echo -e "${spacing}|  \/  |  __ _  _ __    __ _   __ _   ___  _ __ ${N}"
   echo -e "${spacing}| |\/| | / _\` || '_ \  / _\` | / _\` | / _ \| '__|${N}"
   echo -e "${spacing}| |  | || (_| || | | || (_| || (_| ||  __/| |   ${N}"
   echo -e "${spacing}|_|  |_| \__,_||_| |_| \__,_| \__, | \___||_|   ${N}"
   echo -e "${spacing}                              |___/             ${N}"
-  echo -e "${spacing}An Androidacy project. Visit us @ androidacy.com${N}"
+  echo -e "${spacing}An Androidacy app. Visit us @ androidacy.com${N}"
   echo -e "$div"
 }
 # Handle user quit
@@ -57,12 +57,12 @@ trap do_quit INT
 e_spinner() {
   PID=$!
   h=0
-  anim='⠋⠙⠴⠦'
+  anim='▰▱▱▱▱▱▱▰▰▱▱▱▱▱▰▰▰▱▱▱▱▰▰▰▰▱▱▱▰▰▰▰▰▱▱▰▰▰▰▰▰▱▰▰▰▰▰▰▰▰▱▱▱▱▱▱'
   do_banner
   while [ -d /proc/$PID ]; do
-    h=$(((h + 1) % 4))
-    sleep 0.05
-    printf "\r${@} [${anim:$h:1}]"
+    h=$(((h + 22) % 8))
+    sleep 0.08
+    printf "\r${@} |${anim:$h:22}|"
   done
 }
 it_failed() {
@@ -71,7 +71,7 @@ it_failed() {
     echo -e "$div"
     echo -e "${R} ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ${N}"
     echo -e "${R} Something bad happened, and we've hit a snag.${N}"
-    echo -e "${R} We'll take you back to the menu here to try again.${N}"
+    echo -e "${R} We'll take you back to the menu to try again.${N}"
     echo -e "${R} ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ ⓧ ERROR ⓧ${N}"
     echo -e "$div"
   fi

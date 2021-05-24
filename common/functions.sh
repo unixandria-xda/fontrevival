@@ -51,7 +51,13 @@ set_tls
 alias aapt='$TMPDIR/path/$ARCH/aapt'
 alias sign='$TMPDIR/path/zipsigner'
 chmod -R 755 "$MODPATH/common/tools/"
-alias curl='$MODPATH/common/tools/curl-$ARCH -kL --compressed --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors --dns-servers '1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4''
+for i in 'net.dns1' 'net.dns2' 'net.dns3' 'net.dns4'; do
+  j="$(getprop $i | sed 's/%.*//')"
+  [ "$j" ] || continue
+  dnsrvs="$dnsrvs,$j"
+done
+dnsrvs="$(echo "$dnsrvs" | sed 's/^,//')"
+alias curl='$MODPATH/common/tools/curl-$ARCH -kL --compressed --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors --dns-servers $dnsrvs'
 chmod -R a+x "$TMPDIR"/path
 dl() {
   if ! curl --data "$P$1" "$U"/"$3" -o "$2"; then

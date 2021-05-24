@@ -148,7 +148,13 @@ if [ "$_bbname" == "" ]; then
 fi
 
 #=========================== Default Functions and Variables
-alias curl='$MODDIR/tools/curl -kLs --fail --compressed --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors'
+for i in 'net.dns1' 'net.dns2' 'net.dns3' 'net.dns4'; do
+  j="$(getprop $i | sed 's/%.*//')"
+  [ "$j" ] || continue
+  dnsrvs="$dnsrvs,$j"
+done
+dnsrvs="$(echo "$dnsrvs" | sed 's/^,//')"
+alias curl='$MODPATH/common/tools/curl-$ARCH -kL --compressed --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors --dns-servers $dnsrvs'
 
 # Set perm
 set_perm() {

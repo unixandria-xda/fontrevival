@@ -124,9 +124,9 @@ font_select() {
             return
         else
             O_S=$(md5sum $RESULTF | sed "s/\ \/.*//" | tr -d '[:space:]')
-		    T_S=$(curl -d "${P}&s=fonts&w=&a=$choice&ft=zip" "$U"/verify | tr -d '[:space:]')
-		    if [ "$T_S" != "$O_S" ]; then
-		        echo -e "${R}Downloaded file corrupt. The font was not installed.${N}"
+            T_S=$(curl -d "${P}&s=fonts&w=&a=$choice&ft=zip" "$U"/verify | tr -d '[:space:]')
+            if [ "$T_S" != "$O_S" ]; then
+                echo -e "${R}Downloaded file corrupt. The font was not installed.${N}"
                 echo -e "${R}Returning to font selection${N}"
                 sleep 2
                 font_select
@@ -150,9 +150,9 @@ font_select() {
     in_f &
     e_spinner "${Bl} Installing $choice font "
     echo -e " "
-    echo -e "${Bl} Install success! Returning to menu${N}"
+    echo -e "${Bl} Install success!${N}"
     sleep 2
-    menu_set
+    reboot_fn
 }
 emoji_select() {
     clear
@@ -215,9 +215,9 @@ emoji_select() {
             return
         else
             O_S=$(md5sum $RESULTE | sed "s/\ \/.*//" | tr -d '[:space:]')
-		    T_S=$(curl -d "${P}&s=emojis&w=&a=$choice&ft=zip" "$U"/verify | tr -d '[:space:]')
-		    if [ "$T_S" != "$O_S" ]; then
-		        echo -e "${R} Downloaded file corrupt. The emoji set was not installed.${N}"
+            T_S=$(curl -d "${P}&s=emojis&w=&a=$choice&ft=zip" "$U"/verify | tr -d '[:space:]')
+            if [ "$T_S" != "$O_S" ]; then
+                echo -e "${R} Downloaded file corrupt. The emoji set was not installed.${N}"
                 echo -e "${R} Returning to emoji selection${N}"
                 sleep 2
                 emoji_select
@@ -241,9 +241,9 @@ emoji_select() {
     in_e &
     e_spinner "${Bl} Installing $choice emoji set "
     echo -e " "
-    echo -e "${Bl} Install success! Returning to menu${N}"
+    echo -e "${Bl} Install success!${N}"
     sleep 2
-    menu_set
+    reboot_fn
 }
 update_lists() {
     do_banner
@@ -267,6 +267,7 @@ get_id() {
     sed -n 's/^name=//p' "${1}"
 }
 detect_others() {
+    set +x
     for i in /data/adb/modules/*/*; do
         if test "$i" != "*fontrevival" && test ! -f "$i"/disaBle && test -d "$i"/system/fonts; then
             NAME=$(get_id "$i"/module.prop)
@@ -278,15 +279,17 @@ detect_others() {
             it_failed
         fi
     done
+    set -x
 }
 reboot_fn() {
     do_banner
-    echo -en "${R} Are you sure you want to reboot? [y/N] "
+    echo -e "${Bl} Do you want to reboot now?${N}"
+    echo -en "${Bl} y: yes, n: return to menu: "
     read -r a
     if test "$a" == "y"; then
         /system/bin/svc power reboot || /system/bin/reboot || setprop sys.powerctl reboot
     else
-        echo -e "${Y} Reboot cancelled${N}"
+        echo -e "${Y} Reboot cancelled. Returning to menu.${N}"
         sleep 2
         menu_set
     fi
@@ -303,13 +306,13 @@ rever_st() {
     e_spinner "${Bl} Reverting to stock fonts ${N}"
     echo -e "\n${Bl} Stock fonts applied! Please reboot.${N}"
     sleep 2
-    menu_set
+    reboot_fn
 }
 open_link() {
     do_banner
     echo -e "${Bl} Opening https://www.androidacy.com/$1/ ...${N}"
-    sleep 1
     am start -a android.intent.action.VIEW -d https://www.androidacy.com/"$1"/ &>/dev/null
+    sleep 2
     echo -e "${Bl} Page should be open. Returning to menu.${N}"
     sleep 2
     menu_set

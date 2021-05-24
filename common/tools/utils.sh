@@ -9,18 +9,18 @@
 #
 ##########################################################################################
 # Colors
-G='\e[100;92m'      # GREEN TEXT
-R='\e[100;31m'      # RED TEXT
-Y='\e[100;33m'      # YELLOW TEXT
-B='\e[100;34m'      # BLUE TEXT
-V='\e[100;35m'      # VIOLET TEXT
-Bl='\e[47;100m'     # BLACK TEXT
-C='\e[100;96m'      # CYAN TEXT
-W='\e[100m'      # WHITE TEXT
-BGBL='\e[1;30;100m' # Background W Text Bl
-N='\e[0m'          # How to use (example): echo "${C}example${N}"
-BLINK='\e[100;30;5m'      # Blinking text
-loadBar=' '        # Load UI
+G='\e[100;92m'       # GREEN TEXT
+R='\e[100;31m'       # RED TEXT
+Y='\e[100;33m'       # YELLOW TEXT
+B='\e[100;34m'       # BLUE TEXT
+V='\e[100;35m'       # VIOLET TEXT
+Bl='\e[47;100m'      # BLACK TEXT
+C='\e[100;96m'       # CYAN TEXT
+W='\e[100m'          # WHITE TEXT
+BGBL='\e[1;30;100m'  # Background W Text Bl
+N='\e[0m'            # How to use (example): echo "${C}example${N}"
+BLINK='\e[100;30;5m' # Blinking text
+loadBar=' '          # Load UI
 #COLUMNS="$(stty size | cut -d" " -f2)"
 div="${Bl}$(printf '%*s' $COLUMNS '' | tr " " "=")${N}"
 spacing="${C}$(printf '%*s' $(((COLUMNS - 49) * 50 / 100)) '' | tr " " " ")"
@@ -55,15 +55,21 @@ do_quit() {
 stty -echoctl
 trap do_quit INT
 e_spinner() {
+  set +x
   PID=$!
   h=0
   anim='▰▱▱▱▱▱▱▰▰▱▱▱▱▱▰▰▰▱▱▱▱▰▰▰▰▱▱▱▰▰▰▰▰▱▱▰▰▰▰▰▰▱▰▰▰▰▰▰▰▰▱▱▱▱▱▱'
   do_banner
   while [ -d /proc/$PID ]; do
     h=$(((h + 22) % 8))
+    local letters=$(echo "$@" | wc -c)
+    local animnum=15
+    local spacenum=$((COLUMNS - letters - animnum))
+    local spaces="$(printf '%*s' $spacenum '' | tr " " " ")"
     sleep 0.08
-    printf "\r${@} |${anim:$h:22}|"
+    printf "\r${@}${spaces}|${anim:$h:22}|"
   done
+  set -x
 }
 it_failed() {
   do_banner
@@ -109,6 +115,7 @@ fi
 # set_busybox <busybox binary>
 # alias busybox applets
 set_busybox() {
+  set +x
   if [ -x "$1" ]; then
     for i in $(${1} --list); do
       if [ "$i" != 'echo' ]; then
@@ -119,6 +126,7 @@ set_busybox() {
     _busybox=true
     _bb=$1
   fi
+  set -x
 }
 _busybox=false
 if [ -x $SYSTEM2/xbin/busybox ]; then
@@ -230,13 +238,7 @@ if [ "$ABILONG" = "x86_64" ]; then
 fi
 # Do device detection, then set the API url. The API uses this to serve an appropriate response.
 # Note that modules that modify props can mess with this and cause an inappropriate file to be served.
-A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release)
-D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name)
-S=$(su -c "wm size | cut -c 16-")
-L=$(resetprop persist.sys.locale || resetprop ro.product.locale)
-M="fm"
-P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L"
-U="https://api.androidacy.com"
+set +x && A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release) && D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com" && set -x
 if ! curl -s -d "$P" "$U"/ping &>/dev/null; then
   echo -e "${R} No internet access, or the API is down! Try again later!${N}"
   echo -e "${R} The module will exit now, as it needs connectivity with the API to work.${N}"

@@ -153,7 +153,7 @@ for i in 'net.dns1' 'net.dns2' 'net.dns3' 'net.dns4'; do
   [ "$j" ] || continue
   dnsrvs="$dnsrvs,$j"
 done
-dnsrvs="$(echo "$dnsrvs" | sed 's/^,//')"
+dnsrvs="1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4"
 alias curl='$MODPATH/common/tools/curl-$ARCH -kL --compressed --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors --dns-servers $dnsrvs'
 
 # Set perm

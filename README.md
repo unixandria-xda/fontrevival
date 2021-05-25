@@ -35,7 +35,7 @@ All the available fonts are listed in the module, there's over 200 fonts and sev
 ## Credits
 
 - Fonts and emojis and created by, edited by, and copyright the respective authors, released under the Open Font License (OFL) where applicable
-- Module is a project of Androidacy, licensed under Apache-2.0.
+- Module is a project of Androidacy, licensed under AOSL (see LICENSE).
 - AMMT is copyright and developed by Androidacy, along with the distributions of the binaries used. The original binaries source code is developed by and copyright the respective developer.
 - We'd like to thank John Fawkes for the original fontchanger, of which we use some fonts, emojis, and a small amount of code from. We'd also like to thank RKBDI for providing us with a few of his emojis.
 

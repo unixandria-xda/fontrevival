@@ -24,6 +24,10 @@ loadBar=' '          # Load UI
 #COLUMNS="$(stty size | cut -d" " -f2)"
 div="${Bl}$(printf '%*s' $COLUMNS '' | tr " " "=")${N}"
 spacing="${C}$(printf '%*s' $(((COLUMNS - 49) * 50 / 100)) '' | tr " " " ")"
+if [[ ! $(getenforce) == "permissive" || ! $(getenforce) == "Permissive" ]]; then
+  SELINUX=true
+fi
+$SELINUX && setenforce 0
 # Print module banner
 do_banner() {
   printf %b '\e[100m' '\e[8]' '\e[H\e[J'
@@ -50,6 +54,7 @@ do_quit() {
   echo -e ""
   sleep 2
   printf %b '\e[0m' '\e[8]' '\e[H\e[J'
+  $SELINUX && setenforce 1
   exit 0
 }
 stty -echoctl

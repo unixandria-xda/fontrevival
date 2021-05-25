@@ -20,6 +20,10 @@ do_banner() {
 	sleep 1
 }
 do_banner
+if [[ ! $(getenforce) == "permissive" || ! $(getenforce) == "Permissive" ]]; then
+  SELINUX=true
+fi
+$SELINUX && setenforce 0
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
 [ -f "$MODPATH/common/addon.tar.xz" ] && tar -xf $MODPATH/common/addon.tar.xz -C $MODPATH/common 2>/dev/null
 it_failed() {
@@ -147,6 +151,7 @@ cleanup() {
   ui_print "*   Based on the original MMT-ex     *"
   ui_print "**************************************"
   ui_print " "
+  $SELINUX && setenforce 1
 }
 
 device_check() {

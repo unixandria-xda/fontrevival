@@ -124,7 +124,7 @@ font_select() {
             return
         else
             O_S=$(md5sum $RESULTF | sed "s/\ \/.*//" | tr -d '[:space:]')
-            T_S=$(curl -d "${P}&s=fonts&w=&a=$choice&ft=zip" "$U"/verify | tr -d '[:space:]')
+            T_S=$(dl "${P}&s=fonts&w=&a=$choice&ft=zip" '-' verify | tr -d '[:space:]')
             if [ "$T_S" != "$O_S" ]; then
                 echo -e "${R}Downloaded file corrupt. The font was not installed.${N}"
                 echo -e "${R}Returning to font selection${N}"
@@ -215,7 +215,7 @@ emoji_select() {
             return
         else
             O_S=$(md5sum $RESULTE | sed "s/\ \/.*//" | tr -d '[:space:]')
-            T_S=$(curl -d "${P}&s=emojis&w=&a=$choice&ft=zip" "$U"/verify | tr -d '[:space:]')
+            T_S=$(dl "${P}&s=emojis&w=&a=$choice&ft=zip" '-' verify | tr -d '[:space:]')
             if [ "$T_S" != "$O_S" ]; then
                 echo -e "${R} Downloaded file corrupt. The emoji set was not installed.${N}"
                 echo -e "${R} Returning to emoji selection${N}"

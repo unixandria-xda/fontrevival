@@ -148,13 +148,6 @@ if [ "$_bbname" == "" ]; then
 fi
 
 #=========================== Default Functions and Variables
-for i in 'net.dns1' 'net.dns2' 'net.dns3' 'net.dns4'; do
-  j="$(getprop $i | sed 's/%.*//')"
-  [ "$j" ] || continue
-  dnsrvs="$dnsrvs,$j"
-done
-dnsrvs="1.1.1.1,1.0.0.1,8.8.8.8,8.8.4.4"
-alias curl='$MODPATH/common/tools/curl-$ARCH -kL --compressed --tcp-fastopen --create-dirs --http2-prior-knowledge --retry 3 --retry-all-errors --dns-servers $dnsrvs'
 
 # Set perm
 set_perm() {
@@ -245,14 +238,14 @@ fi
 # Do device detection, then set the API url. The API uses this to serve an appropriate response.
 # Note that modules that modify props can mess with this and cause an inappropriate file to be served.
 set +x && A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release) && D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com" && set -x
-if ! curl -s -d "$P" "$U"/ping &>/dev/null; then
+if ! wget -qc "$U/ping?$P" -O /dev/null -o /dev/null; then
   echo -e "${R} No internet access, or the API is down! Try again later!${N}"
   echo -e "${R} The module will exit now, as it needs connectivity with the API to work.${N}"
   exit 1
 fi
 dl() {
-  if ! curl -d "$P$1" "$U"/"$3" -o "$2"; then
-    echo -e "⚠ Download failed! Bailing out!"
+  if ! wget -qc "${U}/${3}?${P}${1}" -O "$2" -o /dev/null; then
+    echo -e "${R}⚠ Download failed! Bailing out!${N}"
     it_failed
   fi
 }

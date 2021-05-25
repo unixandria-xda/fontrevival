@@ -88,16 +88,8 @@ xml_s() {
 	fi
 }
 get_lists() {
-	test_connection
-	if ! $INTERNET; then
-		ui_print "ⓘ No internet access!"
-		ui_print "ⓘ This module requires internet access."
-		ui_print "ⓘ There is no current plans for making it work offline, as it requires certain online files."
-		ui_print "ⓘ Aborting"
-		abort
-	else
 		ui_print "ⓘ Excellent, you have internet."
-		ui_print "ⓘ Downlading extra files..."
+		ui_print "ⓘ Downloading extra files..."
 		mkdir -p "$MODPATH"/lists
 		mkdir -p "$EXT_DATA"/lists
 		mkdir -p "$EXT_DATA"/font
@@ -109,7 +101,6 @@ get_lists() {
 		mkdir -p "$MODPATH"/system/fonts
 		cp "$MODPATH"/lists/* "$EXT_DATA"/lists
 		xml_s
-	fi
 }
 copy_lists() {
 	cp -rf "$MODPATH"/lists/fonts-list.txt "$EXT_DATA"/lists/fonts-list.txt
@@ -123,12 +114,11 @@ extra_cleanup() {
 	mkdir "$MODPATH"/tools/
 	mv "$MODPATH"/common/tools/fontmanager.sh "$MODPATH"/tools/fontmanager
 	mv "$MODPATH"/common/tools/utils.sh "$MODPATH"/tools/utils
-	mv "$MODPATH/common/tools/curl-$ARCH" "$MODPATH/tools/curl"
 	mv "$MODPATH/common/tools/bash-$ARCH" "$MODPATH/tools/bash"
 	rm -fr "$MODPATH"/common/
 	rm -rf "$MODPATH"/*.md
 	rm -rf "$MODPATH"/LICENSE
-	$INTERNET && curl -s -d "$P&i=1" "$U"/ping >/dev/null
+	$INTERNET && wget -q "$U/ping?$P&i=1" >/dev/null
 }
 get_lists
 copy_lists

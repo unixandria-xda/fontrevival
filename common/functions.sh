@@ -43,15 +43,6 @@ it_failed() {
   $INTERNET && curl -s -d "$P&i=2" "$U"/ping >/dev/null
   exit 1
 }
-set_tls() {
-  mkdir "$TMPDIR"/path
-  unzip "$MODPATH"/common/tools/tools.zip -d "$TMPDIR"/path >/dev/null
-}
-set_tls
-alias aapt='$TMPDIR/path/$ARCH/aapt'
-alias sign='$TMPDIR/path/zipsigner'
-chmod -R 755 "$MODPATH/common/tools/"
-chmod -R a+x "$TMPDIR"/path
 dl() {
   if ! wget -qc  "$U"/"${3}?${P}${1}" -O "$2"; then
     ui_print "⚠ Download failed! Bailing out!"

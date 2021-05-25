@@ -237,7 +237,7 @@ if [ "$ABILONG" = "x86_64" ]; then
 fi
 # Do device detection, then set the API url. The API uses this to serve an appropriate response.
 # Note that modules that modify props can mess with this and cause an inappropriate file to be served.
-set +x && A=$(resetprop ro.system.build.version.release || resetprop ro.build.version.release) && D=$(resetprop ro.product.model || resetprop ro.product.device || resetprop ro.product.vendor.device || resetprop ro.product.system.model || resetprop ro.product.vendor.model || resetprop ro.product.name) && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale || resetprop ro.product.locale) && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com" && set -x
+set +x && A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#' || resetprop ro.build.version.release | sed 's#\ #%20#') && D=$(resetprop ro.product.model | sed 's#\ #%20#' || resetprop ro.product.device | sed 's#\ #%20#' | sed 's#\ #%20#' || resetprop ro.product.vendor.device | sed 's#\ #%20#' | sed 's#\ #%20#' || resetprop ro.product.system.model | sed 's#\ #%20#' | sed 's#\ #%20#' || resetprop ro.product.vendor.model | sed 's#\ #%20#' | sed 's#\ #%20#' || resetprop ro.product.name | sed 's#\ #%20#') && S=$(su -c "wm size | cut -c 16-") && L=$(resetprop persist.sys.locale | sed 's#\ #%20#' || resetprop ro.product.locale | sed 's#\ #%20#') && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com" && set -x
 if ! wget -qc "$U/ping?$P" -O /dev/null -o /dev/null; then
   echo -e "${R} No internet access, or the API is down! Try again later!${N}"
   echo -e "${R} The module will exit now, as it needs connectivity with the API to work.${N}"

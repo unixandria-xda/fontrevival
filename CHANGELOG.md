@@ -1,5 +1,9 @@
 # Changelog
 
+# v4.2.12
+
+- See the release post on https://www.androidacy.com/blog/
+
 ## v4.0.2
 
 - Much improve the UX and UI of the module

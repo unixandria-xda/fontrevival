@@ -17,7 +17,7 @@ do_banner() {
 	ui_print "*************************************************"
 	ui_print "An Androidacy project - androidacy.com"
 	ui_print "*************************************************"
-	sleep 2
+	sleep 1
 }
 do_banner
 unzip -o "$ZIPFILE" -x 'META-INF/*' 'common/functions.sh' -d $MODPATH >&2
@@ -44,7 +44,7 @@ it_failed() {
   exit 1
 }
 dl() {
-  if ! wget -qc  "$U"/"${3}?${P}${1}" -O "$2"; then
+  if ! wget -qc  "${U}/${3}?${P}${1}" -O "$2"; then
     ui_print "⚠ Download failed! Bailing out!"
     it_failed
   fi
@@ -92,8 +92,8 @@ set -x
 exec 2>"$EXT_DATA"/logs/install.log
 A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#g' || resetprop ro.build.version.release | sed 's#\ #%20#g') && D=$(resetprop ro.product.model | sed 's#\ #%20#g' || resetprop ro.product.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.system.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.name | sed 's#\ #%20#g') && S=$(setenforce 0 && wm size | cut -c 16- && setenforce 1) && L=$(resetprop persist.sys.locale | sed 's#\ #%20#g' || resetprop ro.product.locale | sed 's#\ #%20#g') && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
 if ! wget -qc "$U/ping?$P" -O /dev/null -o /dev/null; then
-  echo -e "No internet access, or the API is down! Try again later!"
-  echo -e "The module will exit now, as it needs connectivity with the API to work."
+  echo "No internet access, or the API is down! Try again later!"
+  echo "The module will exit now, as it needs connectivity with the API to work."
   abort
 fi
 mount_apex() {

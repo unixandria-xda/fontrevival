@@ -123,7 +123,7 @@ font_select() {
             font_select
             return
         else
-            O_S=$(md5sum $RESULTF | sed "s/\ \/.*//" | tr -d '[:space:]')
+            O_S=$(md5sum "$RESULTF" | sed "s/\ \/.*//" | tr -d '[:space:]')
             T_S=$(dl "${P}&s=fonts&w=&a=$choice&ft=zip" '-' verify | tr -d '[:space:]')
             if [ "$T_S" != "$O_S" ]; then
                 echo -e "${R}Downloaded file corrupt. The font was not installed.${N}"
@@ -214,7 +214,7 @@ emoji_select() {
             font_select
             return
         else
-            O_S=$(md5sum $RESULTE | sed "s/\ \/.*//" | tr -d '[:space:]')
+            O_S=$(md5sum "$RESULTE" | sed "s/\ \/.*//" | tr -d '[:space:]')
             T_S=$(dl "${P}&s=emojis&w=&a=$choice&ft=zip" '-' verify | tr -d '[:space:]')
             if [ "$T_S" != "$O_S" ]; then
                 echo -e "${R} Downloaded file corrupt. The emoji set was not installed.${N}"
@@ -234,6 +234,13 @@ emoji_select() {
             mkdir -p "$MODDIR"/system/system_ext/fonts
             cp "$MODDIR"/system/fonts/* "$MODDIR"/system/system_ext/fonts/
             set_perm_recursive 644 root root 0 "$MODDIR"/system/system_ext/fonts/*
+        fi
+        if test -d /data/data/com.facebook.orca; then
+            if test -d /data/data/com.facebook.orca/app_compactdisk/ras_blobs/latest/sessionless/storage; then
+                cp -f "$MODDIR/system/fonts/NotoColorEmoji.ttf" "/data/data/com.facebook.orca/app_compactdisk/ras_blobs/latest/sessionless/storage/FacebookEmoji.ttf"
+                FBID="$(dumpsys package com.facebook.orca | grep userId=)"
+                set_perm 644 "$FBID" "$FBID" 0 "/data/data/com.facebook.orca/app_compactdisk/ras_blobs/latest/sessionless/storage/FacebookEmoji.ttf"
+            fi
         fi
         echo "$choice" >"$MODDIR"/cemoji
         sleep 1.5

@@ -24,10 +24,6 @@ loadBar=' '          # Load UI
 #COLUMNS="$(stty size | cut -d" " -f2)"
 div="${Bl}$(printf '%*s' $COLUMNS '' | tr " " "=")${N}"
 spacing="${C}$(printf '%*s' $(((COLUMNS - 49) * 50 / 100)) '' | tr " " " ")"
-if [[ ! $(getenforce) == "permissive" || ! $(getenforce) == "Permissive" ]]; then
-  SELINUX=true
-fi
-$SELINUX && setenforce 0
 # Print module banner
 do_banner() {
   printf %b '\e[100m' '\e[8]' '\e[H\e[J'
@@ -242,7 +238,10 @@ if [ "$ABILONG" = "x86_64" ]; then
 fi
 # Do device detection, then set the API url. The API uses this to serve an appropriate response.
 # Note that modules that modify props can mess with this and cause an inappropriate file to be served.
-A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#g' || resetprop ro.build.version.release | sed 's#\ #%20#g') && D=$(resetprop ro.product.model | sed 's#\ #%20#g' || resetprop ro.product.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.system.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.name | sed 's#\ #%20#g') && S=$(wm size | cut -c 16- | head -n 1) && L=$(resetprop persist.sys.locale | sed 's#\ #%20#g' || resetprop ro.product.locale | sed 's#\ #%20#g') && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
+if ! S=$(wm size | cut -c 16- | head -n 1); then
+  S='n%2Fa'
+fi
+A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#g' || resetprop ro.build.version.release | sed 's#\ #%20#g') && D=$(resetprop ro.product.model | sed 's#\ #%20#g' || resetprop ro.product.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.system.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.name | sed 's#\ #%20#g') && L=$(resetprop persist.sys.locale | sed 's#\ #%20#g' || resetprop ro.product.locale | sed 's#\ #%20#g') && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
 if ! wget -qc "$U/ping?$P" -O /dev/null -o /dev/null; then
   echo -e "${R} No internet access, or the API is down! Try again later!${N}"
   echo -e "${R} The module will exit now, as it needs connectivity with the API to work.${N}"

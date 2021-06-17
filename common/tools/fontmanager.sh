@@ -317,8 +317,8 @@ rever_st() {
 }
 open_link() {
     do_banner
-    echo -e "${Bl} Opening https://www.androidacy.com/$1/ ...${N}"
-    am start -a android.intent.action.VIEW -d https://www.androidacy.com/"$1"/ &>/dev/null
+    echo -e "${Bl} Opening https://www.androidacy.com/$1/...${N}"
+    am start -a android.intent.action.VIEW -d "https://www.androidacy.com/$1/?utm_source=FontManager" &>/dev/null
     sleep 2
     echo -e "${Bl} Page should be open. Returning to menu.${N}"
     sleep 2

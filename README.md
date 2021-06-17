@@ -4,8 +4,7 @@
 
 ![Logo](https://www.androidacy.com/wp-content/uploads/rsz_cropped-adobe_post_20210202_00133408277657334196729-1024x576-1.png)
 
-_Be sure to check out [https://www.androidacy.com](https://www.androidacy.com)_
-
+### Be sure to check out [https://www.androidacy.com](https://www.androidacy.com/?utm_source=mrepo)
 
 Forget your Joypixels module, and your Google Sans module. Forget your Open Sans and your iOS emoji module. Forget whatever 2013 tools still support systemfully edting fonts. Forget them all, because you have the real font and emoji mangement power in your hands.
 
@@ -17,7 +16,7 @@ Be sure to grab the latest release from the download link!
 
 Just flash in Magisk Manager. Non-magisk installs are NOT supported.
 
-## Usage
+# Usage
 
 To use, all you need to do is run `su -c manage_fonts` in a terminal such as TermUX. Note that adb shell is not supported, and that the old "Terminal Emulator" app has serious bugs.
 

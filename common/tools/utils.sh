@@ -1,6 +1,5 @@
 #!/bin/bash
 # shellcheck disable=SC2145,SC2034,SC2124,SC2139,SC2155,SC2086,SC2015,SC2004,SC2059,SC2017,SC2000
-# TODO: Refactor this pile of you-know-what
 ##########################################################################################
 #
 # Terminal Utility Functions
@@ -238,10 +237,7 @@ if [ "$ABILONG" = "x86_64" ]; then
 fi
 # Do device detection, then set the API url. The API uses this to serve an appropriate response.
 # Note that modules that modify props can mess with this and cause an inappropriate file to be served.
-if ! S=$(wm size | cut -c 16- | head -n 1); then
-  S='n%2Fa'
-fi
-A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#g' || resetprop ro.build.version.release | sed 's#\ #%20#g') && D=$(resetprop ro.product.model | sed 's#\ #%20#g' || resetprop ro.product.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.system.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.name | sed 's#\ #%20#g') && L=$(resetprop persist.sys.locale | sed 's#\ #%20#g' || resetprop ro.product.locale | sed 's#\ #%20#g') && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=$S&l=$L" && U="https://api.androidacy.com"
+A=$(resetprop ro.system.build.version.release | sed 's#\ #%20#g' || resetprop ro.build.version.release | sed 's#\ #%20#g') && D=$(resetprop ro.product.model | sed 's#\ #%20#g' || resetprop ro.product.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.device | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.system.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.vendor.model | sed 's#\ #%20#g' | sed 's#\ #%20#g' || resetprop ro.product.name | sed 's#\ #%20#g') && L=$(resetprop persist.sys.locale | sed 's#\ #%20#g' || resetprop ro.product.locale | sed 's#\ #%20#g') && M="fm" && P="m=$M&av=$A&a=$ARCH&d=$D&ss=%20&l=$L" && U="https://api.androidacy.com"
 if ! wget -qc "$U/ping?$P" -O /dev/null -o /dev/null; then
   echo -e "${R} No internet access, or the API is down! Try again later!${N}"
   echo -e "${R} The module will exit now, as it needs connectivity with the API to work.${N}"
